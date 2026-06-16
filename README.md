@@ -1,8 +1,23 @@
-# Coach — Adaptive Fitness System
+# Tiffany OS
 
-A research-backed fitness coaching system that generates personalized training sessions based on your daily physiology, not a fixed program. You talk to Claude in your terminal. Deterministic Azure Functions handle the data. No app, no dashboard — just a conversation.
+One unified personal OS. North star: the best version of Tiffany. Body, mind, and nervous system as one connected system — not separate concerns. You talk to Claude in your terminal. Deterministic Azure Functions handle the data. No app, no dashboard — just a conversation.
 
 **[Read the full backstory on why I built this.](docs/backstory.md)**
+
+## Modules
+
+| Module | Status | Purpose |
+|---|---|---|
+| [fitness-pipeline](skills/) | active | Physical training, readiness, progression |
+| [gut-health](modules/gut-health/SKILL.md) | planned | Digestion, inflammation, gut-brain axis |
+| [nervous-system](modules/nervous-system/SKILL.md) | planned | Stress regulation, HRV patterns, somatic awareness |
+| [mind-curiosity](modules/mind-curiosity/SKILL.md) | planned | Arabic, neuroscience, interactive learning |
+
+The fitness-pipeline (described below) is the first active module. The rest are scaffolded with context and will be filled in as I build each one.
+
+---
+
+## Module: fitness-pipeline
 
 ## Why This Exists
 
@@ -54,8 +69,8 @@ The key idea: **Claude owns reasoning. Code owns data.** The deterministic funct
 
 ```bash
 # 1. Clone
-git clone https://github.com/txfnys/gym-healthy.git
-cd gym-healthy
+git clone https://github.com/txfny/tiffany-os.git
+cd tiffany-os
 
 # 2. Deploy Azure Functions
 cd azure-functions
