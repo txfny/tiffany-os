@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the check-in — tiffany os</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F2EADB; --paper-2: #F8F1E4; --paper-3: #EADFC9;
+    --ink: #4A4136; --ink-soft: #6E6354; --ink-faint: #A4977F;
+    --line: rgba(74,65,54,.30); --line-soft: rgba(74,65,54,.15);
+    --honey: #E7BE76; --sage: #9CAE86; --sage-soft: #C9D6B8;
+    --blush: #D69E8E; --blush-soft: #EBD0C7; --dusk: #C7B2CE; --skyblue: #AEC8CC;
+    --serif: "Newsreader", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--paper); margin: 0; }
+  body { font-family: var(--serif); color: var(--ink); font-size: 17px; line-height: 1.6;
+         font-weight: 300; -webkit-font-smoothing: antialiased;
+         padding: 34px 20px 120px; max-width: 640px; margin: 0 auto;
+         background-image: radial-gradient(circle at 22% 30%, rgba(74,65,54,.02) 1px, transparent 2px),
+                           radial-gradient(circle at 78% 72%, rgba(74,65,54,.02) 1px, transparent 2px); }
+
+  .crumb { font-size: 12.5px; color: var(--ink-faint); font-style: italic; margin-bottom: 14px; }
+  .crumb a { color: var(--ink-faint); text-decoration: none; border-bottom: 1px dotted var(--line); }
+  .crumb a:hover { color: var(--ink); }
+
+  .eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: .22em; text-transform: uppercase;
+             color: var(--ink-faint); margin-bottom: 10px; }
+  h1 { font-style: italic; font-weight: 400; font-size: 33px; margin: 0 0 6px; }
+  .lede { font-style: italic; color: var(--ink-soft); font-size: 15.5px; margin: 0 0 4px; }
+
+  .vow { font-size: 13px; color: var(--ink-soft); background: var(--paper-2); border: 1px solid var(--line-soft);
+         border-left: 3px solid var(--sage); border-radius: 10px; padding: 11px 14px; margin: 18px 0 26px; line-height: 1.5; }
+  .vow b { font-weight: 400; }
+
+  .tabs { display: flex; gap: 7px; margin: 0 0 24px; }
+  .tab { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+         background: none; border: 1px solid var(--line-soft); color: var(--ink-faint); padding: 7px 15px;
+         border-radius: 999px; cursor: pointer; transition: all .15s ease; }
+  .tab:hover { color: var(--ink); border-color: var(--line); }
+  .tab.active { background: var(--ink); color: var(--paper-2); border-color: var(--ink); }
+
+  .view { display: none; }
+  .view.show { display: block; animation: fade .3s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  .q { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase;
+       color: var(--blush); margin: 26px 0 12px; }
+  .q:first-of-type { margin-top: 6px; }
+  .q .opt { color: var(--ink-faint); text-transform: none; letter-spacing: .04em; font-style: italic; }
+
+  .feels { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .feel { font-family: var(--serif); font-size: 17px; text-align: left; background: var(--paper-2);
+          border: 1.5px solid var(--line-soft); border-radius: 14px; padding: 15px 16px; cursor: pointer;
+          color: var(--ink); transition: all .15s ease; display: flex; align-items: center; gap: 11px; }
+  .feel:hover { border-color: var(--line); transform: translateY(-1px); }
+  .feel .dot { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+  .feel.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+  .feel small { display: block; font-size: 11.5px; color: var(--ink-faint); font-style: italic; margin-top: 1px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font-family: var(--serif); font-style: italic; font-size: 14.5px; color: var(--ink-soft);
+          background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 999px;
+          padding: 7px 14px; cursor: pointer; transition: all .14s ease; }
+  .chip:hover { border-color: var(--line); }
+  .chip.on { background: var(--blush); color: var(--paper-2); border-color: var(--blush); font-style: normal; }
+  .chip.sage.on { background: var(--sage); border-color: var(--sage); }
+  .chip.honey.on { background: var(--honey); border-color: var(--honey); color: var(--ink); }
+
+  textarea, input[type=text] { width: 100%; font-family: var(--serif); font-size: 15.5px; color: var(--ink);
+        background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 12px; padding: 12px 14px;
+        line-height: 1.5; resize: vertical; }
+  textarea:focus, input:focus { outline: none; border-color: var(--line); }
+  textarea::placeholder, input::placeholder { color: var(--ink-faint); font-style: italic; }
+  .hint { font-size: 12px; color: var(--ink-faint); font-style: italic; margin: 6px 2px 0; }
+
+  .save { width: 100%; margin-top: 30px; font-family: var(--serif); font-size: 17px; font-style: italic;
+          background: var(--ink); color: var(--paper-2); border: 0; border-radius: 14px; padding: 15px;
+          cursor: pointer; transition: opacity .15s ease; }
+  .save:hover { opacity: .9; }
+  .save:disabled { opacity: .4; cursor: default; }
+  .saved-flash { text-align: center; font-style: italic; color: var(--sage); font-size: 14px;
+                 margin-top: 14px; height: 18px; transition: opacity .3s; }
+
+  /* timeline */
+  .day-h { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+           color: var(--ink-faint); margin: 26px 0 12px; border-bottom: 1px solid var(--line-soft); padding-bottom: 7px; }
+  .entry { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 13px;
+           padding: 13px 15px; margin-bottom: 10px; position: relative; }
+  .entry .top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 5px; }
+  .entry .time { font-family: var(--mono); font-size: 10.5px; color: var(--ink-faint); }
+  .entry .feel-tag { font-style: italic; font-size: 15px; }
+  .entry .syms { font-size: 14px; color: var(--ink-soft); }
+  .entry .meta { font-size: 13px; color: var(--ink-faint); font-style: italic; margin-top: 4px; }
+  .entry .meta b { font-weight: 400; font-style: normal; color: var(--ink-soft); }
+  .entry .del { position: absolute; top: 11px; right: 12px; font-family: var(--mono); font-size: 10px;
+                color: var(--ink-faint); background: none; border: 0; cursor: pointer; opacity: .5; }
+  .entry .del:hover { opacity: 1; color: var(--blush); }
+  .empty { font-style: italic; color: var(--ink-faint); text-align: center; padding: 40px 20px; }
+
+  /* doctor export */
+  .exp-card { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 14px; padding: 18px; }
+  .exp-pre { font-family: var(--mono); font-size: 12px; line-height: 1.7; color: var(--ink-soft);
+             white-space: pre-wrap; max-height: 340px; overflow: auto; background: var(--paper);
+             border: 1px solid var(--line-soft); border-radius: 10px; padding: 14px; margin-top: 12px; }
+  .exp-actions { display: flex; gap: 9px; margin-top: 14px; }
+  .btn { font-family: var(--serif); font-style: italic; font-size: 15px; background: var(--ink); color: var(--paper-2);
+         border: 0; border-radius: 11px; padding: 11px 18px; cursor: pointer; }
+  .btn.ghost { background: none; color: var(--ink-soft); border: 1px solid var(--line); }
+  .range { display: flex; gap: 7px; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+  <div class="crumb"><a href="../index.html">← the room</a></div>
+  <div class="eyebrow">a quiet check-in</div>
+  <h1>the check-in</h1>
+  <p class="lede">how's your body, really? a soft place to notice — and bring the dots to Dr. Burbage.</p>
+
+  <div class="vow">
+    this is for <b>noticing patterns</b>, not grading anything. no calories, no amounts, no good-or-bad.
+    just your body and how it feels. food's only here as a little clue, never a score. 🤍
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-view="log">+ check in</button>
+    <button class="tab" data-view="recent">recent</button>
+    <button class="tab" data-view="doctor">for the doctor</button>
+  </div>
+
+  <!-- ============ LOG ============ -->
+  <section class="view show" id="view-log">
+    <div class="q">how's your body right now?</div>
+    <div class="feels" id="feels"></div>
+
+    <div id="more" style="display:none">
+      <div class="q">what's going on? <span class="opt">tap any that fit</span></div>
+      <div class="chips" id="symptoms"></div>
+
+      <div class="q" id="q-int">how strong?</div>
+      <div class="chips" id="intensity"></div>
+
+      <div class="q">when'd it start?</div>
+      <div class="chips" id="started"></div>
+
+      <div class="q">anything in your body you want to note? <span class="opt">optional</span></div>
+      <textarea id="bodynote" rows="2" placeholder="e.g. can't fully breathe in · gurgling · tight"></textarea>
+
+      <div class="q">did anything help or soothe it? <span class="opt">optional · builds your what-settles-me list</span></div>
+      <div class="chips" id="helped"></div>
+    </div>
+
+    <div class="q">anything you ate or drank lately? <span class="opt">optional · just the what</span></div>
+    <input type="text" id="intake" placeholder="salmon + rice · coffee · sparkling water…">
+    <div class="hint">no amounts, no detail needed — just a clue for spotting patterns later.</div>
+
+    <button class="save" id="save">save this check-in</button>
+    <div class="saved-flash" id="flash"></div>
+  </section>
+
+  <!-- ============ RECENT ============ -->
+  <section class="view" id="view-recent">
+    <div id="timeline"></div>
+  </section>
+
+  <!-- ============ DOCTOR ============ -->
+  <section class="view" id="view-doctor">
+    <div class="exp-card">
+      <div class="q" style="margin-top:0">a clean timeline for Dr. Burbage</div>
+      <p style="font-size:14px;color:var(--ink-soft);font-style:italic;margin:0 0 12px">
+        symptoms first, food beside them, in order. copy it into a note or message — that's all she needs.</p>
+      <div class="range">
+        <button class="chip sage on" data-range="7">last 7 days</button>
+        <button class="chip sage" data-range="14">last 14 days</button>
+        <button class="chip sage" data-range="999">everything</button>
+      </div>
+      <pre class="exp-pre" id="export">…</pre>
+      <div class="exp-actions">
+        <button class="btn" id="copy">copy for the doctor</button>
+        <button class="btn ghost" id="print">print</button>
+      </div>
+    </div>
+  </section>
+
+<script>
+const KEY = "tos_checkins";
+const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } };
+const save = (a) => localStorage.setItem(KEY, JSON.stringify(a));
+const esc = (s) => (s||"").replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+
+const FEELINGS = [
+  { id:"good",    label:"all good",      sub:"feeling fine",        color:"var(--sage)" },
+  { id:"off",     label:"a little off",  sub:"something's there",   color:"var(--honey)" },
+  { id:"rough",   label:"rough",         sub:"uncomfortable",       color:"var(--blush)" },
+  { id:"flaring", label:"flaring",       sub:"really loud rn",      color:"#C77B6A" },
+];
+const SYMPTOMS = ["gas","bloating","cramping","stomach pain","nausea","reflux / burning",
+                  "can't breathe fully","gurgling","urgency","constipated","fatigue","heavy / full"];
+const INTENSITY = ["mild","medium","strong"];
+const STARTED = ["just now","after eating","this morning","been all day","woke up with it"];
+
+const state = { feeling:null, symptoms:new Set(), intensity:null, started:null };
+
+// ---- build feeling buttons ----
+const feelsEl = document.getElementById("feels");
+FEELINGS.forEach(f => {
+  const b = document.createElement("button");
+  b.className = "feel"; b.dataset.id = f.id;
+  b.innerHTML = `<span class="dot" style="background:${f.color}"></span><span>${f.label}<small>${f.sub}</small></span>`;
+  b.onclick = () => {
+    state.feeling = f.id;
+    [...feelsEl.children].forEach(c => c.classList.toggle("on", c.dataset.id === f.id));
+    document.getElementById("more").style.display = (f.id === "good") ? "none" : "block";
+    if (f.id === "good") { state.symptoms.clear(); state.intensity = null; state.started = null; renderChips(); }
+    refreshSave();
+  };
+  feelsEl.appendChild(b);
+});
+
+function chipRow(host, items, cls, getOn, onTap) {
+  host.innerHTML = "";
+  items.forEach(it => {
+    const c = document.createElement("button");
+    c.className = "chip" + (cls ? " " + cls : "") + (getOn(it) ? " on" : "");
+    c.textContent = it;
+    c.onclick = () => { onTap(it); renderChips(); refreshSave(); };
+    host.appendChild(c);
+  });
+}
+function renderChips() {
+  chipRow(document.getElementById("symptoms"), SYMPTOMS, "", it => state.symptoms.has(it),
+    it => state.symptoms.has(it) ? state.symptoms.delete(it) : state.symptoms.add(it));
+  chipRow(document.getElementById("intensity"), INTENSITY, "honey", it => state.intensity === it,
+    it => state.intensity = (state.intensity === it ? null : it));
+  chipRow(document.getElementById("started"), STARTED, "sage", it => state.started === it,
+    it => state.started = (state.started === it ? null : it));
+}
+renderChips();
+
+function refreshSave(){ document.getElementById("save").disabled = !state.feeling; }
+refreshSave();
+
+// ---- save ----
+document.getElementById("save").onclick = () => {
+  if (!state.feeling) return;
+  const all = load();
+  all.push({
+    id: Date.now(), ts: new Date().toISOString(),
+    feeling: state.feeling,
+    symptoms: [...state.symptoms],
+    intensity: state.intensity,
+    started: state.started,
+    bodynote: document.getElementById("bodynote").value.trim(),
+    intake: document.getElementById("intake").value.trim(),
+  });
+  save(all);
+  // reset
+  state.feeling = null; state.symptoms.clear(); state.intensity = null; state.started = null;
+  [...feelsEl.children].forEach(c => c.classList.remove("on"));
+  document.getElementById("more").style.display = "none";
+  document.getElementById("bodynote").value = ""; document.getElementById("intake").value = "";
+  renderChips(); refreshSave();
+  const fl = document.getElementById("flash");
+  fl.textContent = "noted. thank you for listening to yourself 🤍"; fl.style.opacity = 1;
+  setTimeout(() => fl.style.opacity = 0, 2600);
+};
+
+// ---- tabs ----
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("show"));
+  t.classList.add("active");
+  document.getElementById("view-" + t.dataset.view).classList.add("show");
+  if (t.dataset.view === "recent") renderTimeline();
+  if (t.dataset.view === "doctor") renderExport();
+});
+
+const feelLabel = id => (FEELINGS.find(f => f.id === id) || {}).label || id;
+const feelColor = id => (FEELINGS.find(f => f.id === id) || {}).color || "var(--ink-faint)";
+const dayKey = ts => new Date(ts).toLocaleDateString(undefined, {weekday:"short", month:"short", day:"numeric"});
+const timeStr = ts => new Date(ts).toLocaleTimeString(undefined, {hour:"numeric", minute:"2-digit"});
+
+// ---- timeline ----
+function renderTimeline() {
+  const tl = document.getElementById("timeline");
+  const all = load().sort((a,b) => b.id - a.id);
+  if (!all.length) { tl.innerHTML = `<div class="empty">no check-ins yet.<br>your body's worth listening to — start whenever.</div>`; return; }
+  let html = "", lastDay = null;
+  all.forEach(e => {
+    const d = dayKey(e.ts);
+    if (d !== lastDay) { html += `<div class="day-h">${d}</div>`; lastDay = d; }
+    const syms = e.symptoms.length ? `<span class="syms">· ${e.symptoms.map(esc).join(", ")}${e.intensity ? " ("+e.intensity+")" : ""}</span>` : "";
+    let meta = [];
+    if (e.started) meta.push(`started <b>${esc(e.started)}</b>`);
+    if (e.bodynote) meta.push(`"${esc(e.bodynote)}"`);
+    if (e.intake) meta.push(`ate/drank: <b>${esc(e.intake)}</b>`);
+    html += `<div class="entry">
+      <button class="del" data-del="${e.id}">remove</button>
+      <div class="top"><span class="time">${timeStr(e.ts)}</span>
+        <span class="feel-tag" style="color:${feelColor(e.feeling)}">${feelLabel(e.feeling)}</span>${syms}</div>
+      ${meta.length ? `<div class="meta">${meta.join(" · ")}</div>` : ""}
+    </div>`;
+  });
+  tl.innerHTML = html;
+  tl.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+    if (!confirm("remove this check-in?")) return;
+    save(load().filter(x => x.id != b.dataset.del)); renderTimeline();
+  });
+}
+
+// ---- doctor export ----
+let expRange = 7;
+function renderExport() {
+  const cutoff = Date.now() - expRange * 864e5;
+  const all = load().filter(e => expRange >= 999 || e.id >= cutoff).sort((a,b) => a.id - b.id);
+  const pre = document.getElementById("export");
+  if (!all.length) { pre.textContent = "no check-ins in this window yet."; return; }
+  let out = "BODY CHECK-INS — for Dr. Burbage\n(symptoms first, food noted as a variable)\n", lastDay = null;
+  all.forEach(e => {
+    const d = dayKey(e.ts);
+    if (d !== lastDay) { out += `\n${d}\n`; lastDay = d; }
+    let line = `  ${timeStr(e.ts).padEnd(8)} ${feelLabel(e.feeling)}`;
+    if (e.symptoms.length) line += ` — ${e.symptoms.join(", ")}` + (e.intensity ? ` (${e.intensity})` : "");
+    if (e.started) line += `, started ${e.started}`;
+    out += line + "\n";
+    if (e.bodynote) out += `           note: "${e.bodynote}"\n`;
+    if (e.intake)   out += `           ate/drank: ${e.intake}\n`;
+  });
+  pre.textContent = out;
+}
+document.querySelectorAll("[data-range]").forEach(b => b.onclick = () => {
+  document.querySelectorAll("[data-range]").forEach(x => x.classList.remove("on"));
+  b.classList.add("on"); expRange = +b.dataset.range; renderExport();
+});
+document.getElementById("copy").onclick = async () => {
+  try { await navigator.clipboard.writeText(document.getElementById("export").textContent);
+        document.getElementById("copy").textContent = "copied 🤍";
+        setTimeout(() => document.getElementById("copy").textContent = "copy for the doctor", 1800);
+  } catch { alert("select the text and copy manually 🤍"); }
+};
+document.getElementById("print").onclick = () => window.print();
+</script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>arabic studio · practice — tiffany os</title>
+<link rel="stylesheet" href="../learning/shared/walk.css">
+<style>
+  body { padding: 48px 24px 100px 72px; }
+  .spine { position: absolute; top: 28px; bottom: 28px; left: 36px; width: 1px;
+           border-left: 1px dashed var(--terra-line); pointer-events: none; }
+  .wrap { max-width: 640px; margin: 0 auto; }
+
+  .crumb { font-size: 12px; color: var(--ink-faint); font-style: italic; margin-bottom: 6px; }
+  .crumb a { color: var(--ink-faint); text-decoration: none; border-bottom: 1px dotted var(--terra-line); }
+  .crumb a:hover { color: var(--ink); }
+  h1 { font-style: italic; font-weight: 400; font-size: 32px; color: var(--ink); margin-bottom: 14px; }
+
+  /* tabs */
+  .tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+  .tab { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+         text-decoration: none; color: var(--ink-faint); padding: 6px 14px; border: 1px solid var(--terra-soft);
+         border-radius: 999px; transition: all .15s ease; }
+  .tab:hover { color: var(--terra); border-color: var(--terra); }
+  .tab.active { background: var(--terra); color: #FBF5E8; border-color: var(--terra); }
+
+  /* progress */
+  .meter { display: flex; align-items: center; gap: 14px; margin: 22px 0 26px; }
+  .dots { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
+  .dot { width: 13px; height: 13px; border-radius: 50%; border: 1px solid var(--terra-soft); background: var(--cream-2); }
+  .dot.b1 { background: rgba(160,112,80,.22); } .dot.b2 { background: rgba(160,112,80,.42); }
+  .dot.b3 { background: rgba(160,112,80,.62); } .dot.b4 { background: #b88a63; }
+  .dot.b5 { background: #6f9e73; border-color: #6f9e73; }
+  .meter .stat { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; color: var(--ink-faint);
+                 text-transform: uppercase; white-space: nowrap; }
+
+  /* card */
+  .card { background: var(--cream-2); border: 1px solid var(--terra-soft); border-radius: 20px;
+          padding: 34px 28px; text-align: center; min-height: 320px; display: flex; flex-direction: column;
+          justify-content: center; }
+  .ask { font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+         color: var(--terra); margin-bottom: 20px; }
+  .prompt-big { font-size: 110px; line-height: 1; color: var(--ink); }
+  .prompt-text { font-style: italic; font-size: 26px; color: var(--ink); line-height: 1.3; }
+  .prompt-text .mono { font-family: var(--font-mono); font-style: normal; font-size: 16px; color: var(--terra); display: block; margin-top: 8px; letter-spacing: .06em; }
+
+  .reveal { margin-top: 22px; border-top: 1px dashed var(--terra-line); padding-top: 20px; animation: fade .3s ease both; }
+  .reveal .big { font-size: 92px; line-height: 1; color: var(--ink); }
+  .reveal .name { font-style: italic; font-size: 22px; color: var(--ink); margin-top: 4px; }
+  .reveal .sub { font-family: var(--font-mono); font-size: 12px; color: var(--terra); letter-spacing: .06em; margin-top: 4px; }
+  .reveal .ex { font-style: italic; font-size: 15px; color: var(--ink-soft); margin-top: 12px; }
+  .reveal .ex .ar { font-style: normal; font-size: 20px; color: var(--ink); }
+  .reveal .forms { display: flex; justify-content: center; gap: 10px; margin-top: 14px; }
+  .reveal .forms .fc { font-size: 26px; color: var(--ink); }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* trace pad (write cards) */
+  .trace-wrap { position: relative; margin: 16px auto 0; max-width: 320px; border: 1px dashed var(--terra-line);
+                border-radius: 12px; background: var(--cream); aspect-ratio: 3/2; overflow: hidden; }
+  .trace-ghost { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+                 font-size: 130px; color: transparent; pointer-events: none; user-select: none; transition: color .3s; }
+  .trace-ghost.show { color: var(--terra-soft); }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+
+  /* buttons */
+  .btns { display: flex; gap: 10px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+  .btn { font-family: var(--font-serif); font-style: italic; font-size: 16px; padding: 11px 22px; border-radius: 999px;
+         cursor: pointer; border: 1px solid var(--terra-line); background: var(--cream-2); color: var(--ink); transition: all .15s ease; }
+  .btn:hover { background: #FFFBF1; border-color: var(--terra); }
+  .btn.show { background: var(--terra); color: #FBF5E8; border-color: var(--terra); }
+  .btn.nope:hover { border-color: #b9603f; color: #b9603f; }
+  .btn.easy:hover { border-color: #6f9e73; color: #6f9e73; }
+  .small { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); letter-spacing: .06em;
+           text-align: center; margin-top: 12px; }
+  .done-screen { text-align: center; }
+  .done-screen .h { font-style: italic; font-size: 26px; color: var(--ink); margin-bottom: 10px; }
+  .done-screen p { font-style: italic; color: var(--ink-soft); margin-bottom: 18px; }
+  .reset { background: none; border: none; color: var(--ink-faint); font-family: var(--font-mono); font-size: 10px;
+           letter-spacing: .08em; cursor: pointer; text-decoration: underline; margin-top: 20px; }
+
+  @media (max-width: 600px) { body { padding-left: 24px; } .spine { display: none; } }
+</style>
+</head>
+<body>
+<div class="spine"></div>
+<div class="wrap">
+  <div class="crumb"><a href="../index.html">← the room</a></div>
+  <h1>arabic studio</h1>
+  <div class="tabs">
+    <a class="tab" href="index.html">explore</a>
+    <a class="tab active" href="practice.html">practice</a>
+  </div>
+
+  <div class="meter">
+    <div class="dots" id="dots"></div>
+    <div class="stat" id="stat"></div>
+  </div>
+
+  <div class="card" id="card"></div>
+  <div class="small" id="hint"></div>
+  <button class="reset" id="reset">reset all progress</button>
+</div>
+
+<script src="letters.js"></script>
+<script>
+(function () {
+  var L = window.LETTERS, Z = window.ZWJ;
+  var LS = "arabic_box_v1";
+  function load() { try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch (e) { return {}; } }
+  function save(b) { try { localStorage.setItem(LS, JSON.stringify(b)); } catch (e) {} }
+  var box = load(); // { "ا": 0..5 }
+  L.forEach(function (l) { if (box[l[0]] == null) box[l[0]] = 0; });
+
+  var card = document.getElementById("card");
+  var TYPES = ["recognize", "recall", "write"];
+  var queue = [], current = null;
+
+  function buildSession() {
+    // least-known first, shuffled within the same box
+    var order = L.map(function (l) { return l[0]; });
+    order.sort(function (a, b) { return box[a] - box[b] || Math.random() - 0.5; });
+    queue = order;
+  }
+  function byChar(c) { return L.find(function (l) { return l[0] === c; }); }
+
+  function drawMeter() {
+    var known = 0;
+    document.getElementById("dots").innerHTML = L.map(function (l) {
+      var b = box[l[0]]; if (b >= 4) known++;
+      return '<div class="dot b' + b + '" title="' + l[1] + '"></div>';
+    }).join("");
+    document.getElementById("stat").textContent = known + " / 28 known · " + queue.length + " to go";
+  }
+
+  function next() {
+    drawMeter();
+    if (!queue.length) return finish();
+    var c = queue[0];
+    var type = TYPES[Math.floor(Math.random() * TYPES.length)];
+    current = { c: c, l: byChar(c), type: type };
+    front();
+  }
+
+  function forms(c) {
+    return [c, c + Z, Z + c + Z, Z + c].map(function (f) { return '<span class="fc">' + f + "</span>"; }).join("");
+  }
+
+  function front() {
+    var l = current.l, t = current.type, h = "";
+    if (t === "recognize") {
+      h = '<div class="ask">which letter is this?</div><div class="prompt-big">' + l[0] + "</div>";
+    } else if (t === "recall") {
+      h = '<div class="ask">which letter makes this sound?</div><div class="prompt-text">' + l[3] +
+          '<span class="mono">' + l[1] + "</span></div>";
+    } else {
+      h = '<div class="ask">write this letter</div><div class="prompt-text">' + l[1] +
+          '<span class="mono">' + l[3] + '</span></div>' +
+          '<div class="trace-wrap"><div class="trace-ghost" id="ghost">' + l[0] + '</div><canvas id="pad"></canvas></div>';
+    }
+    h += '<div class="btns"><button class="btn show" id="showbtn">show me</button></div>';
+    card.innerHTML = h;
+    document.getElementById("hint").textContent = current.type === "write"
+      ? "try drawing it, then check yourself"
+      : "picture it first — then reveal";
+    if (t === "write") initPad();
+    document.getElementById("showbtn").onclick = back;
+  }
+
+  function back() {
+    var l = current.l;
+    if (current.type === "write") { var g = document.getElementById("ghost"); if (g) g.classList.add("show"); }
+    var rev = '<div class="reveal"><div class="big">' + l[0] + '</div>' +
+              '<div class="name">' + l[1] + '</div>' +
+              '<div class="sub">' + l[2] + " · " + l[3] + '</div>' +
+              '<div class="ex"><span class="ar">' + l[4] + '</span> — ' + l[6] + '</div>' +
+              '<div class="forms">' + forms(l[0]) + '</div></div>';
+    // keep the front prompt, append the reveal + rating
+    card.insertAdjacentHTML("beforeend", rev);
+    var btns = document.getElementById("showbtn").parentNode;
+    btns.innerHTML =
+      '<button class="btn nope" data-r="0">nope</button>' +
+      '<button class="btn" data-r="1">got it</button>' +
+      '<button class="btn easy" data-r="2">too easy</button>';
+    [].forEach.call(btns.querySelectorAll("button"), function (b) {
+      b.onclick = function () { rate(parseInt(b.getAttribute("data-r"), 10)); };
+    });
+    document.getElementById("hint").textContent = "be honest — missed ones come back this session";
+  }
+
+  function rate(r) {
+    var c = current.c;
+    if (r === 0) { box[c] = 0; queue.push(queue.shift()); }     // wrong: reset, requeue at end
+    else if (r === 1) { box[c] = Math.min(5, box[c] + 1); queue.shift(); }
+    else { box[c] = Math.min(5, box[c] + 2); queue.shift(); }
+    save(box);
+    next();
+  }
+
+  function finish() {
+    var known = L.filter(function (l) { return box[l[0]] >= 4; }).length;
+    card.innerHTML = '<div class="done-screen"><div class="h">that\'s the deck 🤍</div>' +
+      '<p>' + known + ' of 28 letters are sitting in your "known" boxes.<br>come back tomorrow — spacing is what makes it stick.</p>' +
+      '<button class="btn show" id="again">go again</button></div>';
+    document.getElementById("hint").textContent = "";
+    document.getElementById("again").onclick = function () { buildSession(); next(); };
+    drawMeter();
+  }
+
+  // --- trace pad ---
+  function initPad() {
+    var pad = document.getElementById("pad"); if (!pad) return;
+    var ctx = pad.getContext("2d"), drawing = false;
+    var r = pad.getBoundingClientRect();
+    pad.width = r.width * devicePixelRatio; pad.height = r.height * devicePixelRatio;
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+    ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = 5; ctx.strokeStyle = "#3D2F22";
+    function pos(e) { var b = pad.getBoundingClientRect(); var t = e.touches ? e.touches[0] : e; return [t.clientX - b.left, t.clientY - b.top]; }
+    pad.addEventListener("pointerdown", function (e) { drawing = true; var p = pos(e); ctx.beginPath(); ctx.moveTo(p[0], p[1]); e.preventDefault(); });
+    pad.addEventListener("pointermove", function (e) { if (!drawing) return; var p = pos(e); ctx.lineTo(p[0], p[1]); ctx.stroke(); e.preventDefault(); });
+    window.addEventListener("pointerup", function () { drawing = false; });
+  }
+
+  document.getElementById("reset").onclick = function () {
+    if (!confirm("reset all letter progress?")) return;
+    box = {}; L.forEach(function (l) { box[l[0]] = 0; }); save(box); buildSession(); next();
+  };
+
+  buildSession();
+  next();
+})();
+</script>
+</body>
+</html>

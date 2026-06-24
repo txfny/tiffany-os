@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>arabic studio — tiffany os</title>
+<link rel="stylesheet" href="../learning/shared/walk.css">
+<style>
+  body { padding: 48px 24px 100px 72px; }
+  .spine { position: absolute; top: 28px; bottom: 28px; left: 36px; width: 1px;
+           border-left: 1px dashed var(--terra-line); pointer-events: none; }
+  .wrap { max-width: 920px; margin: 0 auto; }
+
+  .crumb { font-size: 12px; color: var(--ink-faint); font-style: italic; margin-bottom: 6px; }
+  .crumb a { color: var(--ink-faint); text-decoration: none; border-bottom: 1px dotted var(--terra-line); }
+  .crumb a:hover { color: var(--ink); }
+  h1 { font-style: italic; font-weight: 400; font-size: 32px; color: var(--ink); margin-bottom: 6px; }
+  .lede { font-style: italic; color: var(--ink-soft); font-size: 16px; max-width: 620px; margin-bottom: 30px; }
+
+  .tabs { display: flex; gap: 6px; margin: 2px 0 22px; }
+  .tab { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+         text-decoration: none; color: var(--ink-faint); padding: 6px 14px; border: 1px solid var(--terra-soft);
+         border-radius: 999px; transition: all .15s ease; }
+  .tab:hover { color: var(--terra); border-color: var(--terra); }
+  .tab.active { background: var(--terra); color: #FBF5E8; border-color: var(--terra); }
+
+  .layout { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: start; }
+
+  /* letter grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 10px; }
+  .cell { aspect-ratio: 1; border: 1px solid var(--terra-soft); background: var(--cream-2);
+          border-radius: 12px; cursor: pointer; display: flex; flex-direction: column;
+          align-items: center; justify-content: center; gap: 2px; transition: all .15s ease; }
+  .cell:hover { background: #FFFBF1; border-color: var(--terra); transform: translateY(-1px); }
+  .cell.active { background: #FFFBF1; border-color: var(--terra); box-shadow: 0 0 0 2px var(--terra-soft); }
+  .cell .ch { font-size: 30px; color: var(--ink); line-height: 1; }
+  .cell .tr { font-family: var(--font-mono); font-size: 9px; color: var(--ink-faint); letter-spacing: .04em; }
+
+  /* detail panel */
+  .panel { position: sticky; top: 40px; background: var(--cream-2); border: 1px solid var(--terra-soft);
+           border-radius: 18px; padding: 26px; }
+  .panel .big { font-size: 88px; line-height: 1; color: var(--ink); text-align: center; margin-bottom: 6px; }
+  .panel .name { text-align: center; font-style: italic; font-size: 22px; color: var(--ink); }
+  .panel .translit { text-align: center; font-family: var(--font-mono); font-size: 12px;
+                     color: var(--terra); letter-spacing: .08em; margin-bottom: 16px; }
+  .row { border-top: 1px dashed var(--terra-line); padding: 12px 0; }
+  .row .k { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+            color: var(--terra); margin-bottom: 6px; }
+  .row .v { font-style: italic; color: var(--ink-soft); font-size: 15px; line-height: 1.5; }
+  .row .v .ar { font-style: normal; font-size: 22px; color: var(--ink); }
+
+  .forms { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
+  .forms .f { border: 1px solid var(--terra-soft); border-radius: 10px; padding: 10px 4px; background: var(--cream); }
+  .forms .f .fc { font-size: 30px; color: var(--ink); line-height: 1; min-height: 34px; }
+  .forms .f .fk { font-family: var(--font-mono); font-size: 8px; letter-spacing: .08em; text-transform: uppercase;
+                  color: var(--ink-faint); margin-top: 6px; }
+  .note { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); margin-top: 8px; font-style: normal; }
+
+  /* tracing */
+  .trace-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .trace-wrap { position: relative; margin-top: 8px; border: 1px dashed var(--terra-line);
+                border-radius: 12px; background: var(--cream); aspect-ratio: 3/2; overflow: hidden; }
+  .trace-ghost { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+                 font-size: 150px; color: var(--terra-soft); pointer-events: none; user-select: none; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+  .clearbtn { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; color: var(--terra);
+              background: none; border: 1px solid var(--terra-line); border-radius: 8px; padding: 4px 10px;
+              cursor: pointer; }
+  .clearbtn:hover { background: #FFFBF1; }
+
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } .panel { position: static; }
+                              body { padding-left: 24px; } .spine { display: none; } }
+</style>
+</head>
+<body>
+<div class="spine"></div>
+<div class="wrap">
+  <div class="crumb"><a href="../index.html">← the room</a></div>
+  <h1>arabic studio</h1>
+  <div class="tabs">
+    <a class="tab active" href="index.html">explore</a>
+    <a class="tab" href="practice.html">practice</a>
+  </div>
+  <p class="lede">you already speak it. this is for the script — reading and writing.
+     tap a letter to hear how it sounds, see how it shifts shape depending on where it sits in a word,
+     then trace it. arabic reads right → left.</p>
+
+  <div class="layout">
+    <div class="grid" id="grid"></div>
+
+    <div class="panel">
+      <div class="big" id="p-big">ا</div>
+      <div class="name" id="p-name"></div>
+      <div class="translit" id="p-translit"></div>
+
+      <div class="row">
+        <div class="k">sound</div>
+        <div class="v" id="p-sound"></div>
+      </div>
+
+      <div class="row">
+        <div class="k">in a word</div>
+        <div class="v"><span class="ar" id="p-ex"></span> — <span id="p-ex-en"></span></div>
+      </div>
+
+      <div class="row">
+        <div class="k">its four shapes</div>
+        <div class="forms" id="p-forms"></div>
+        <div class="note" id="p-connect"></div>
+      </div>
+
+      <div class="row">
+        <div class="trace-head">
+          <div class="k">trace it</div>
+          <button class="clearbtn" id="clear">clear</button>
+        </div>
+        <div class="trace-wrap">
+          <div class="trace-ghost" id="ghost">ا</div>
+          <canvas id="pad"></canvas>
+        </div>
+        <div class="note">draw over the faint letter · right-to-left strokes</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var Z = "‍"; // zero-width joiner — lets the browser shape positional forms live
+// letters that never connect to the letter AFTER them
+var NONCONNECT = "ادذرزو".split("");
+
+var LETTERS = [
+  ["ا","alif","ʾalif","long \"aa\" — also the seat for vowels","أسد","asad","lion"],
+  ["ب","bāʾ","b","\"b\" as in book","باب","bāb","door"],
+  ["ت","tāʾ","t","\"t\" as in top","تفاح","tuffāḥ","apple"],
+  ["ث","thāʾ","th","\"th\" as in think","ثعلب","thaʿlab","fox"],
+  ["ج","jīm","j / g","Egyptian \"g\" as in go (\"j\" elsewhere)","جمل","gamal","camel"],
+  ["ح","ḥāʾ","ḥ","breathy \"h\" from the throat","حصان","ḥiṣān","horse"],
+  ["خ","khāʾ","kh","\"kh\" — like clearing your throat","خبز","khubz","bread"],
+  ["د","dāl","d","\"d\" as in dog","دب","dubb","bear"],
+  ["ذ","dhāl","dh","\"th\" as in this","ذهب","dhahab","gold"],
+  ["ر","rāʾ","r","rolled \"r\"","رمان","rummān","pomegranate"],
+  ["ز","zāy","z","\"z\" as in zoo","زهرة","zahra","flower"],
+  ["س","sīn","s","\"s\" as in sun","سمك","samak","fish"],
+  ["ش","shīn","sh","\"sh\" as in shoe","شمس","shams","sun"],
+  ["ص","ṣād","ṣ","heavy / emphatic \"s\"","صقر","ṣaqr","falcon"],
+  ["ض","ḍād","ḍ","heavy \"d\" — arabic is called \"the language of ḍād\"","ضفدع","ḍifdaʿ","frog"],
+  ["ط","ṭāʾ","ṭ","heavy \"t\"","طائر","ṭāʾir","bird"],
+  ["ظ","ẓāʾ","ẓ","heavy \"th/z\"","ظرف","ẓarf","envelope"],
+  ["ع","ʿayn","ʿ","deep throat sound — no english equivalent","عين","ʿayn","eye"],
+  ["غ","ghayn","gh","like a french \"r\" / soft gargle","غزال","ghazāl","gazelle"],
+  ["ف","fāʾ","f","\"f\" as in fish","فيل","fīl","elephant 🐘"],
+  ["ق","qāf","q","deep \"k\" from the back (Egyptian: a glottal stop)","قمر","qamar","moon"],
+  ["ك","kāf","k","\"k\" as in kite","كلب","kalb","dog"],
+  ["ل","lām","l","\"l\" as in love","ليمون","laymūn","lemon"],
+  ["م","mīm","m","\"m\" as in moon","ماء","māʾ","water"],
+  ["ن","nūn","n","\"n\" as in nose","نجمة","nagma","star"],
+  ["ه","hāʾ","h","soft \"h\" as in hello","هلال","hilāl","crescent"],
+  ["و","wāw","w / ū","\"w\" — or a long \"oo\"","وردة","warda","rose"],
+  ["ي","yāʾ","y / ī","\"y\" — or a long \"ee\"","يد","yad","hand"]
+];
+
+var grid = document.getElementById("grid");
+var pad = document.getElementById("pad"), ctx = pad.getContext("2d");
+
+function sizeCanvas() {
+  var r = pad.getBoundingClientRect();
+  pad.width = r.width * devicePixelRatio; pad.height = r.height * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = 5;
+  ctx.strokeStyle = "#3D2F22";
+}
+
+function select(i) {
+  var L = LETTERS[i], c = L[0];
+  document.getElementById("p-big").textContent = c;
+  document.getElementById("p-name").textContent = L[1];
+  document.getElementById("p-translit").textContent = L[2];
+  document.getElementById("p-sound").textContent = L[3];
+  document.getElementById("p-ex").textContent = L[4];
+  document.getElementById("p-ex-en").textContent = L[6];
+  document.getElementById("ghost").textContent = c;
+
+  var forms = [["isolated", c], ["initial", c + Z], ["medial", Z + c + Z], ["final", Z + c]];
+  document.getElementById("p-forms").innerHTML = forms.map(function (f) {
+    return '<div class="f"><div class="fc">' + f[1] + '</div><div class="fk">' + f[0] + '</div></div>';
+  }).join("");
+  document.getElementById("p-connect").textContent =
+    NONCONNECT.indexOf(c) >= 0 ? "↳ this one doesn't join to the letter after it" : "";
+
+  [].forEach.call(grid.children, function (el, k) { el.classList.toggle("active", k === i); });
+  clearPad();
+}
+
+LETTERS.forEach(function (L, i) {
+  var b = document.createElement("div");
+  b.className = "cell";
+  b.innerHTML = '<div class="ch">' + L[0] + '</div><div class="tr">' + L[2] + '</div>';
+  b.onclick = function () { select(i); };
+  grid.appendChild(b);
+});
+
+// tracing
+var drawing = false;
+function pos(e) { var r = pad.getBoundingClientRect(); var t = e.touches ? e.touches[0] : e;
+                  return [t.clientX - r.left, t.clientY - r.top]; }
+function start(e) { drawing = true; var p = pos(e); ctx.beginPath(); ctx.moveTo(p[0], p[1]); e.preventDefault(); }
+function move(e) { if (!drawing) return; var p = pos(e); ctx.lineTo(p[0], p[1]); ctx.stroke(); e.preventDefault(); }
+function end() { drawing = false; }
+function clearPad() { ctx.clearRect(0, 0, pad.width, pad.height); }
+pad.addEventListener("pointerdown", start); pad.addEventListener("pointermove", move);
+window.addEventListener("pointerup", end);
+document.getElementById("clear").onclick = clearPad;
+
+sizeCanvas();
+window.addEventListener("resize", function () { sizeCanvas(); });
+select(0);
+</script>
+</body>
+</html>

@@ -14,7 +14,7 @@ DEFAULT_WEIGHTS = {
     "hip_thrust": "50 lb",
     "overhead_press": "20 lb barbell",
     "shoulder_press": "DB press 15 lb each (no asymmetry detected Apr 7, ready to bump)",
-    "lat_pulldown": "65 lb (locked Apr 30, consolidated May 7 — retest 70 next HIGH day)",
+    "lat_pulldown": "75 lb (progressed Jun 4 — stack steps 60/65/75, no 70 exists; consolidate at 75 + standardize attachment before adding load)",
     "seated_row": "60 lb (failed at 65 on Apr 2)",
     "chest_press": "50 lb",
     "tricep_dip": "20 lb",

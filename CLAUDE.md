@@ -59,7 +59,7 @@ Auth: append `?code=<AZURE_FUNCTION_KEY>` to every request. Key is in `azure-fun
 | `/session-type?date=YYYY-MM-DD` | GET | date param | Day name, session type, focus, location, with_bf |
 | `/readiness` | POST | `{ hrv_ms, rhr_bpm, rhr_7day_avg, sleep_hours, energy, symptom_load, dietary_context? }` | Tier (LOW/MODERATE/HIGH), signals, reasoning, volume_adjustment, rpe_cap. Uses rolling 14-day HRV baseline. If `dietary_context` is set (e.g. `"orthodox_lent"`), caps tier at MODERATE. |
 | `/ivg?date=YYYY-MM-DD` | GET | date param | Gap check: status (clear/gaps_found), list of missing days |
-| `/working-weights` | GET | none | Latest working weight per exercise from Supabase |
+| `/working-weights` | GET | none | ⚠️ UNRELIABLE — reads broken Supabase, silently returns stale months-old defaults. DO NOT trust for weights. Use `data/working-weights.json` instead (see below). |
 | `/exercise-selection` | POST | `{ date, session_type, focus, location }` | Exercise list with rotation logic, sets, reps, weights |
 | `/review-plan` | POST | `{ exercise_plan, readiness_tier, location, symptom_regions?, date? }` | Audit: flags (location, bracing, 48h overlap, weight mismatch), volume adjustments, substitution options. Claude maps free-text symptoms to region keys before calling. |
 | `/pre-session` | POST | `{ date, snapshot }` | All of the above in one call (includes exercise selection for strength days) |
@@ -81,8 +81,8 @@ PRE-SESSION:
 1. GET  /session-type        → know what today IS (non-negotiable)
 2. POST /readiness           → compute tier from user's snapshot
 3. GET  /ivg                 → check for data gaps this week
-4. GET  /working-weights     → fetch current weights (don't guess)
-5. POST /exercise-selection  → get today's exercises (rotation logic, strength days only)
+4. READ data/working-weights.json → current weights (LOCAL SOURCE OF TRUTH; do NOT use the /working-weights endpoint — it returns stale defaults)
+5. POST /exercise-selection  → get today's exercises (rotation logic, strength days only). NOTE: its `load` fields are ALSO stale — override every load with data/working-weights.json before showing the user.
 6. POST /review-plan        → audit exercises against context (symptoms, location, 48h history)
 7. [Claude reviews flags, picks substitutions if needed, builds session plan + justification]
 
@@ -140,7 +140,8 @@ After each of these steps, emit one entry:
 ## Rules
 
 - NEVER skip step 1. The session type is determined by code, not by you.
-- NEVER prescribe a weight without checking /working-weights first.
+- NEVER prescribe a weight without reading `data/working-weights.json` first (the local source of truth, derived from session logs). NEVER trust the `/working-weights` endpoint or the `load` fields from `/exercise-selection` — both return stale defaults (Supabase bug). If an exercise isn't in the file, it has no logged progression and its template default stands — confirm with the user rather than assuming.
+- `data/working-weights.json` is regenerated automatically by `my_room/build_room.py`, which runs as part of post-session logging. After every `/save-session`, run `python3 my_room/build_room.py` so the source of truth (and the room) stay current.
 - NEVER pick exercises without calling /exercise-selection first (strength days).
 - NEVER present a session plan without calling /review-plan first (strength days). Map user symptoms to region keys: abdomen, lower_back, knee, shoulder, wrist, neck, hip, ankle, chest, upper_back.
 - NEVER log a session without first collecting post-workout metrics (energy, Apple Health, HRR, how they feel).

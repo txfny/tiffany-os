@@ -37,6 +37,11 @@ Collect daily numbers. Keep it quick after the first few sessions.
 ### 2. Readiness → `skills/readiness/SKILL.md`
 Score readiness using individualized baselines. Show reasoning.
 
+**Emit reasoning trace entry** — `{layer: "readiness", input_summary, interpretation, decision}`. Cite the binding signal explicitly. See CLAUDE.md "Reasoning Trace" section for format.
+
+### 2.5 IVG reasoning trace
+After step 0 IVG runs, emit `{layer: "ivg", interpretation, decision}` — either "clear, no gaps" or "gap on [date], blocking until resolved."
+
 ### 3. Justify — Why this session, how it serves the goal
 Before building the plan, explain the reasoning chain. This is mandatory every session.
 
@@ -61,11 +66,23 @@ Why this session:
 ### 4. Planner → `skills/planner/SKILL.md`
 Build the session. Check soreness, history, progression, sequencing. Deliver the card.
 
+**Emit two reasoning trace entries:**
+- `{layer: "selection", interpretation, decision}` — rotation rationale, anything swapped from the pool
+- `{layer: "review", interpretation, decision}` — review-plan flags, substitutions made, conflicts resolved
+
+After the card is drafted but BEFORE showing the user, emit:
+- `{layer: "final_plan", interpretation, decision}` — one-paragraph why-this-session-now
+
+### 4.7 Self-Review → `skills/coach/REVIEW-PASS.md`
+Run a second-pass critique on the draft before showing the user. Check internal consistency with the reasoning trace, pattern fit with `trend_digest.recurring_flags`, and progression defensibility. Append result as `{layer: "self_review", decision, changes, reasoning}` to `reasoning_trace`. If `decision == "revise"`, apply changes before presenting.
+
 ### 5. Disagreement handling (within Planner)
 Cite research, explain briefly, defer to user. Log overrides.
 
 ### 6. [After workout] Logger → `skills/logger/SKILL.md`
 Collect post-session feedback. Write to `data/sessions/`.
+
+**Include `reasoning_trace` array in the session JSON** — all entries emitted during the pre-session flow, plus any new ones from logging decisions (e.g., why a load was bumped, why a set was skipped).
 
 ### 7. Output Validation Gate (OVG) — mandatory on every output
 
@@ -101,6 +118,7 @@ Before presenting any session plan, summary, or logged data to the user, verify 
 
 - Conservative by default. Lowest signal wins.
 - No phase-based intensity ceilings (user is on OC — readiness drives everything).
+- **Fasting periods:** If `dietary_context` is set in the snapshot, readiness caps at MODERATE. Maintain intensity (same weights), reduce volume (fewer sets). Do NOT swap strength for cardio — strength is the muscle-preservation signal during protein restriction.
 - Soreness ≥ 2 in a muscle group = don't load that group heavy.
 - Never exceed 10% weekly volume increase.
 - Auto-deload: 2 consecutive strength sessions at RPE ≥ 9.

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>your attention and a model's attention — tiffany os</title>
+<link rel="stylesheet" href="../shared/walk.css">
+<style>
+  /* step-specific bits */
+  .notice-counter { font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); margin-top: 10px; font-style: italic; }
+  .brain-stage { display: flex; gap: 20px; align-items: flex-start; }
+  .brain-svg { flex-shrink: 0; }
+  .brain-svg path.region { cursor: pointer; transition: fill 0.2s ease, stroke-width 0.2s ease; }
+  .brain-svg path.region:hover { fill: rgba(160, 112, 80, 0.28); }
+  .brain-svg path.region.active { fill: rgba(160, 112, 80, 0.45); stroke-width: 1.6; }
+  .brain-info { flex: 1; min-height: 110px; font-style: italic; color: var(--ink-soft); font-size: 14px; line-height: 1.6; }
+  .brain-info .name { font-style: italic; color: var(--terra); font-family: var(--font-serif); font-size: 15px; display: block; margin-bottom: 6px; border-bottom: 0; }
+  .qkv-formula { font-family: var(--font-mono); font-size: 13px; background: var(--cream-3); padding: 10px 14px; border-radius: 6px; color: var(--ink); margin: 14px 0; display: inline-block; }
+  .attn-stage { position: relative; padding: 12px 0; }
+  .attn-tokens { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
+  .attn-token { font-family: var(--font-mono); font-size: 14px; padding: 8px 12px; background: var(--cream-3); border-radius: 6px; color: var(--ink); position: relative; transition: background 0.6s ease, color 0.6s ease; }
+  .attn-token.target { border: 1.5px dashed var(--terra); background: var(--cream-2); }
+  .attn-weight { position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 10px; color: var(--terra); opacity: 0; transition: opacity 0.5s ease; }
+  .attn-weight.show { opacity: 1; }
+  .attn-prediction { text-align: center; margin-top: 36px; font-family: var(--font-serif); font-style: italic; font-size: 18px; color: var(--ink); opacity: 0; transition: opacity 0.6s ease; }
+  .attn-prediction.show { opacity: 1; }
+  .attn-prediction .pred { color: var(--terra); font-style: normal; font-weight: 400; border-bottom: 2px solid var(--terra); padding-bottom: 1px; }
+  .timer-count { font-family: var(--font-mono); font-size: 14px; color: var(--terra); margin-top: 8px; }
+  /* interactive self-attention map */
+  .amap-stage { position: relative; padding: 44px 0 26px; }
+  .amap-tokens { display: flex; flex-wrap: wrap; gap: 9px 8px; justify-content: center; position: relative; z-index: 2; }
+  .amap-tok { font-family: var(--font-mono); font-size: 14px; padding: 8px 11px; border-radius: 6px; background: var(--cream-3); color: var(--ink); cursor: pointer; position: relative; transition: background .35s ease, color .35s ease; }
+  .amap-tok.q { background: var(--terra); color: var(--cream); box-shadow: 0 0 0 3px rgba(160,112,80,.18); }
+  .amap-tok .wb { position: absolute; left: 6px; right: 6px; bottom: -7px; height: 3px; background: var(--terra); border-radius: 2px; transform-origin: left center; transform: scaleX(0); transition: transform .4s ease; }
+  .amap-svg { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: visible; }
+  .amap-line { fill: none; stroke: var(--terra); stroke-linecap: round; }
+  @keyframes amdraw { to { stroke-dashoffset: 0; } }
+  .amap-readout { text-align: center; margin-top: 26px; font-family: var(--font-serif); font-style: italic; font-size: 16px; color: var(--ink); min-height: 22px; }
+  .amap-readout b { color: var(--terra); font-style: normal; }
+  .amap-hint { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); margin-left: 10px; font-style: italic; }
+  /* brain attention simulation (step 3) */
+  .brain-sim-wrap { margin-top: 20px; }
+  .sim-label { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); font-style: italic; margin-bottom: 8px; line-height: 1.5; }
+  #brain-sim { width: 100%; max-width: 460px; height: auto; border: 1px solid var(--terra-soft); border-radius: 8px; background: var(--cream-2); display: block; }
+  /* anatomical brain */
+  .brain-svg .anat { fill: var(--cream-2); stroke: var(--terra); stroke-width: 1.2; }
+  .brain-svg .gyrus { fill: none; stroke: var(--terra); stroke-width: 0.8; opacity: .42; stroke-linecap: round; }
+  .brain-svg .region { cursor: pointer; transition: fill 0.2s ease; }
+  .brain-svg .region:hover { fill: rgba(160,112,80,0.26); }
+  .brain-svg .region.active { fill: rgba(160,112,80,0.42); }
+  .brain-3d-link { display: inline-block; margin-top: 16px; font-family: var(--font-mono); font-size: 12px; color: var(--terra); text-decoration: none; border-bottom: 1px dotted var(--terra); }
+  .brain-3d-link:hover { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="spine" aria-hidden="true"></div>
+
+<header class="walk-header">
+  <div class="walk-crumb">
+    <a href="../index.html">learning</a> · <a href="index.html">brain and the model</a>
+  </div>
+  <h1 class="walk-title">your attention and a model's attention</h1>
+</header>
+
+<nav class="walk-progress" aria-label="step progress"></nav>
+
+<!-- step 1 -->
+<section class="step" data-step="0" hidden>
+  <div class="step-eyebrow">step 1 of 7 · notice</div>
+  <h2>before we look at the model, look at yourself.</h2>
+  <p>right now you're attending to this text. that's the bright part. but you're also half-aware of: the room around you, the body you're sitting in, sounds in the background, a thought that started forming a minute ago and hasn't finished.</p>
+  <p>all of it is there. <strong>attention is what makes one part louder than the rest.</strong> not lit and unlit — louder and softer.</p>
+  <div class="interaction">
+    <div class="interaction-label">notice three things you weren't attending to a moment ago</div>
+    <button class="btn" id="notice-btn">notice one</button>
+    <div class="notice-counter" id="notice-count">0 of 3 noticed</div>
+  </div>
+  <div class="walk-nav">
+    <button class="btn-link" disabled>← prev</button>
+    <div class="center"></div>
+    <button class="btn-primary" id="next-1" disabled>next →</button>
+  </div>
+</section>
+
+<!-- step 2 -->
+<section class="step" data-step="1" hidden>
+  <div class="step-eyebrow">step 2 of 7 · the blend</div>
+  <h2>attention isn't a spotlight, it's a weighted blend.</h2>
+  <p>we usually picture attention as a spotlight: one thing lit, everything else dark. it isn't.</p>
+  <p>at any moment, you're 70% on the text, 20% on the body, 10% somewhere else, drifting. the weights are always shifting, mostly without your say. <em>they sum to roughly 100%</em> — what gets more, the rest gets less.</p>
+  <div class="interaction">
+    <div class="interaction-label">drag to where you actually are right now — no correct answer</div>
+    <div class="slider-row">
+      <div class="slider-label">this text</div>
+      <input type="range" class="slider" id="s-text" min="0" max="100" value="70">
+      <div class="slider-value" id="v-text">70</div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-label">the room</div>
+      <input type="range" class="slider" id="s-room" min="0" max="100" value="20">
+      <div class="slider-value" id="v-room">20</div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-label">a thought</div>
+      <input type="range" class="slider" id="s-thought" min="0" max="100" value="10">
+      <div class="slider-value" id="v-thought">10</div>
+    </div>
+  </div>
+  <p class="dim">the act of setting them is what notices the weighting. you can't usually do that — when you do, you can sometimes redistribute.</p>
+  <div class="walk-nav">
+    <button class="btn-link" id="prev-2">← prev</button>
+    <div class="center"></div>
+    <button class="btn-primary" id="next-2">next →</button>
+  </div>
+</section>
+
+<!-- step 3 -->
+<section class="step" data-step="2" hidden>
+  <div class="step-eyebrow">step 3 of 7 · brain mechanism</div>
+  <h2>your brain implements attention in specific places.</h2>
+  <p>three regions do most of the work. attention isn't one thing in your brain — it's a coalition of these agreeing on what to amplify. <em>click any region.</em></p>
+  <div class="interaction">
+    <div class="interaction-label">click a region · the dots are a signal on the real visual pathway</div>
+    <div class="brain-stage">
+      <svg class="brain-svg" id="brain-anat" width="340" height="240" viewBox="0 0 340 240">
+        <!-- eye -->
+        <circle class="anat" cx="30" cy="158" r="14"/>
+        <circle cx="37" cy="158" r="5" fill="var(--terra)" stroke="none"/>
+        <!-- optic nerve -->
+        <path d="M44 156 C90 152 135 146 162 134" fill="none" stroke="var(--terra)" stroke-width="1.1" stroke-dasharray="2 3" opacity="0.7"/>
+        <!-- cerebrum (frontal lobe left, temporal lobe dip, occipital right) -->
+        <path class="anat" d="M78 138 C58 128 54 98 72 80 C90 58 128 48 170 48 C224 48 296 60 300 102 C303 128 286 144 260 146 C256 156 246 160 236 158 C200 164 168 162 150 156 C146 172 130 182 112 178 C98 175 96 164 104 156 C92 156 80 152 78 138 Z"/>
+        <!-- gyri (brain folds) -->
+        <path class="gyrus" d="M92 100 q14 11 28 0 q14 -11 28 0 q14 11 28 0"/>
+        <path class="gyrus" d="M100 120 q16 10 32 0 q16 -10 32 0 q16 10 32 0"/>
+        <path class="gyrus" d="M150 74 q13 11 26 0 q13 -11 26 0"/>
+        <path class="gyrus" d="M214 86 q12 11 24 0 q12 -11 24 0"/>
+        <!-- cerebellum -->
+        <path class="anat" d="M252 150 q34 -2 42 22 q-4 18 -28 18 q-22 0 -26 -16 q-2 -14 12 -24 Z"/>
+        <path class="gyrus" d="M258 160 q18 -3 32 2 M256 170 q20 -2 36 3"/>
+        <!-- brainstem -->
+        <path class="anat" d="M236 172 q5 20 -3 34 q-2 6 2 10" fill="none"/>
+        <!-- thalamus (clickable) -->
+        <ellipse class="anat region" data-region="thalamus" cx="166" cy="126" rx="15" ry="11"/>
+        <!-- clickable region hot-zones -->
+        <path class="region" data-region="prefrontal" d="M72 132 C62 102 80 76 116 70 C120 92 110 118 92 130 C84 134 76 134 72 132 Z" fill="rgba(160,112,80,0.07)"/>
+        <path class="region" data-region="parietal" d="M150 56 C186 52 218 56 234 72 C214 82 180 84 156 78 C150 72 148 62 150 56 Z" fill="rgba(160,112,80,0.07)"/>
+        <path class="region" data-region="occipital" d="M252 148 C280 148 300 130 300 106 C286 100 266 104 252 116 C245 124 245 140 252 148 Z" fill="rgba(160,112,80,0.07)"/>
+        <!-- hidden pathway: eye → thalamus → visual cortex -->
+        <path id="pathway" d="M44 156 C90 152 138 144 166 126 C200 104 244 96 276 100" fill="none" stroke="none"/>
+        <g id="signals"></g>
+        <text x="18" y="184" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint)">eye</text>
+        <text x="250" y="96" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint)">visual cortex</text>
+      </svg>
+      <div class="brain-info" id="brain-info">
+        <em>hover or click a region to see what it does for attention. the dots are a signal traveling eye → thalamus → visual cortex.</em>
+      </div>
+    </div>
+    <a class="brain-3d-link" href="brain-3d.html">↗ now spin the 3D brain we built →</a>
+  </div>
+  <div class="walk-nav">
+    <button class="btn-link" id="prev-3">← prev</button>
+    <div class="center"></div>
+    <button class="btn-primary" id="next-3">next →</button>
+  </div>
+</section>
+
+<!-- step 4 -->
+<section class="step" data-step="3" hidden>
+  <div class="step-eyebrow">step 4 of 7 · model mechanism</div>
+  <h2>now a transformer.</h2>
+  <p>when the model wants to predict the next token, every previous token gets three vectors:</p>
+  <p>— a <strong>query (Q)</strong>: what is this position asking about?<br>
+     — a <strong>key (K)</strong>: what does this token represent?<br>
+     — a <strong>value (V)</strong>: what's this token's content to deliver?</p>
+  <p>the current position's Q gets dotted with every previous token's K. high dot product = high relevance. then softmax-normalize those scores into weights summing to 1, and pull a weighted sum of the V's.</p>
+  <div class="qkv-formula">Attention(Q, K, V) = softmax(QKᵀ / √d) · V</div>
+  <p>that's the entire mechanism. attention is literally a similarity search across the context, with the answer being a blend of values weighted by relevance.</p>
+  <div class="interaction">
+    <div class="interaction-label">click any word — watch it attend to the others</div>
+    <div class="amap-stage" id="amap-stage">
+      <svg class="amap-svg" id="amap-svg"></svg>
+      <div class="amap-tokens" id="amap-tokens"></div>
+    </div>
+    <div class="amap-readout" id="amap-readout"></div>
+    <div style="margin-top: 18px;">
+      <button class="btn" id="amap-auto">▶ autoplay</button>
+      <span class="amap-hint">or click a word</span>
+    </div>
+  </div>
+  <p class="dim">this is one attention head. real models have dozens, each specialized — some track syntax, some track entities, some track positions.</p>
+  <div class="walk-nav">
+    <button class="btn-link" id="prev-4">← prev</button>
+    <div class="center"></div>
+    <button class="btn-primary" id="next-4">next →</button>
+  </div>
+</section>
+
+<!-- step 5 -->
+<section class="step" data-step="4" hidden>
+  <div class="step-eyebrow">step 5 of 7 · family resemblance</div>
+  <h2>plainly: both systems do weighted blends.</h2>
+  <p>different scale, different substrate, same shape.</p>
+  <div class="compare">
+    <div>
+      <h4>you</h4>
+      <ul>
+        <li>weighted inputs from sight, sound, body, memory, thought</li>
+        <li>top-down (prefrontal) goal + bottom-up (sensory) salience</li>
+        <li>thousands of nerve channels per millisecond</li>
+        <li>thalamus gates what cortex sees</li>
+      </ul>
+    </div>
+    <div>
+      <h4>the model</h4>
+      <ul>
+        <li>weighted tokens from the context window</li>
+        <li>Q from the current position, K/V from prior positions</li>
+        <li>hundreds to thousands of tokens at once</li>
+        <li>softmax gates how much each token contributes</li>
+      </ul>
+    </div>
+    <div class="breaks">
+      <h4>where the analogy breaks</h4>
+      <ul>
+        <li>in your brain, attention shapes <em>what gets encoded</em> — you tend to remember what you attended to</li>
+        <li>in a transformer, attention is computed only at inference; the weights don't change the model</li>
+        <li>you walk away from a conversation changed. the model doesn't. yet.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="walk-nav">
+    <button class="btn-link" id="prev-5">← prev</button>
+    <div class="center"></div>
+    <button class="btn-primary" id="next-5">next →</button>
+  </div>
+</section>
+
+<!-- step 6 -->
+<section class="step" data-step="5" hidden>
+  <div class="step-eyebrow">step 6 of 7 · for your work</div>
+  <h2>a quick aside — because you build agents.</h2>
+  <p>when you're designing an agentic RAG system, you're shaping what the model attends to in the most literal sense.</p>
+  <p>your <strong>retrieval step</strong> selects the K's and V's (the candidate chunks). your <strong>prompt</strong> is the Q (what's being asked). the model's attention layer is what decides which retrieved chunks influence the answer.</p>
+  <div class="applied">
+    <div class="applied-label">the load-bearing insight</div>
+    <p style="margin-bottom: 0;">most RAG bugs are attention bugs. irrelevant chunks with high embedding similarity grab too much weight. relevant chunks with low similarity get ignored. the embedding model and the retrieval ranker <em>are</em> the K/V provisioning layer for the model's attention. they decide what the model can attend to.</p>
+  </div>
+  <p>when you debug an HR-Assist style mismatch — "why did it surface this candidate?" — you're debugging the attention layer's K/V inputs, even if the symptoms show up downstream. internalizing this might change how you think about retrieval quality.</p>
+  <div class="walk-nav">
+    <button class="btn-link" id="prev-6">← prev</button>
+    <div class="center"></div>
+    <button class="btn-primary" id="next-6">next →</button>
+  </div>
+</section>
+
+<!-- step 7 -->
+<section class="step" data-step="6" hidden>
+  <div class="step-eyebrow">step 7 of 7 · sit with</div>
+  <h2>one thing you can do that the model can't.</h2>
+  <p>you can't control where your attention goes most of the time. it's pulled by salience — what's loudest, most relevant, most threatening. a transformer can't either; its weighting is fixed at training.</p>
+  <p>but you can do one thing the model can't yet: <em>you can notice that you're attending.</em></p>
+  <p>the noticing is itself a kind of meta-attention — attention turned on attention. it's the thing we don't know how to build. it might be the thing that matters most.</p>
+  <div class="interaction">
+    <div class="interaction-label">ten seconds. don't try to redirect anything. just notice.</div>
+    <div class="timer-stage">
+      <div class="timer-circle" id="timer-circle"></div>
+      <div class="timer-label" id="timer-label">when you're ready</div>
+      <div class="timer-count" id="timer-count"></div>
+      <button class="btn-primary" id="timer-btn">begin</button>
+    </div>
+  </div>
+  <p class="dim" id="sit-after" style="display: none; text-align: center; font-style: italic;">you came here. that's the whole point.</p>
+  <div class="walk-nav">
+    <button class="btn-link" id="prev-7">← prev</button>
+    <div class="center"><em>walk one of brain-and-the-model</em></div>
+    <a href="index.html" class="btn-primary" style="text-decoration: none; display: inline-block;">close walk →</a>
+  </div>
+</section>
+
+<script src="../shared/walk.js"></script>
+<script>
+/* ── step navigation ─────────────────────────────────────────── */
+const steps = document.querySelectorAll(".step");
+
+function showStep(idx) {
+  steps.forEach((s, i) => s.hidden = i !== idx);
+}
+
+const walk = Walk.init({
+  topic: "brain-and-the-model",
+  walk: "01-attention",
+  totalSteps: 7,
+  onStep: (idx, ctx) => {
+    showStep(idx);
+    if (ctx.isLast) walk.markComplete();
+  },
+});
+
+/* ── step 1: notice button ───────────────────────────────────── */
+let noticed = 0;
+const noticeBtn = document.getElementById("notice-btn");
+const noticeCount = document.getElementById("notice-count");
+const next1 = document.getElementById("next-1");
+noticeBtn.addEventListener("click", () => {
+  noticed++;
+  if (noticed >= 3) {
+    noticeCount.textContent = "3 of 3 — go on";
+    noticeBtn.disabled = true;
+    next1.disabled = false;
+  } else {
+    noticeCount.textContent = `${noticed} of 3 noticed`;
+    noticeBtn.textContent = `notice ${["one", "another one", "one more"][noticed]}`;
+  }
+});
+next1.addEventListener("click", () => walk.next());
+
+/* ── step 2: blend sliders ───────────────────────────────────── */
+const sliders = ["text", "room", "thought"];
+function bindSlider(id) {
+  const s = document.getElementById("s-" + id);
+  const v = document.getElementById("v-" + id);
+  s.addEventListener("input", () => { v.textContent = s.value; });
+}
+sliders.forEach(bindSlider);
+document.getElementById("prev-2").addEventListener("click", () => walk.prev());
+document.getElementById("next-2").addEventListener("click", () => walk.next());
+
+/* ── step 3: brain regions ───────────────────────────────────── */
+const REGION_INFO = {
+  thalamus: {
+    name: "the thalamus",
+    text: "a relay station deep in the middle of your brain. nearly every sensory signal passes through it on its way to cortex. the thalamus <em>gates</em> what gets through — when you sleep, it gates almost everything off. waking attention is the thalamus deciding what to let upstairs."
+  },
+  prefrontal: {
+    name: "the prefrontal cortex",
+    text: "the part right behind your forehead. it holds the <em>goal</em> — the thing you're trying to attend to (this text, this meeting, this problem) — and sends top-down signals back into the rest of cortex to amplify whatever matches. damage here, and goal-directed attention falls apart."
+  },
+  parietal: {
+    name: "the parietal lobe",
+    text: "side-top of your brain. it does <em>spatial</em> attention — where in your visual field something is, where your body is in space, where to look next. damage on one side causes hemispatial neglect: people stop noticing the entire left half of the world without realizing they've lost it."
+  },
+  occipital: {
+    name: "the occipital lobe (visual cortex)",
+    text: "the very back of your brain. all vision lands here first. when the thalamus passes a visual signal through, <em>this</em> is where it gets unpacked into edges, motion, faces. attention sharpens whichever parts of what you see matter most — the rest stays blurry even though your eyes saw it."
+  },
+};
+const regionPaths = document.querySelectorAll(".brain-svg .region");
+const brainInfo = document.getElementById("brain-info");
+regionPaths.forEach(p => {
+  p.addEventListener("click", () => {
+    regionPaths.forEach(r => r.classList.remove("active"));
+    p.classList.add("active");
+    const info = REGION_INFO[p.dataset.region];
+    brainInfo.innerHTML = `<span class="name">${info.name}</span>${info.text}`;
+  });
+});
+document.getElementById("prev-3").addEventListener("click", () => walk.prev());
+document.getElementById("next-3").addEventListener("click", () => walk.next());
+
+/* ── step 3: signals flowing along the real visual pathway ────── */
+(function () {
+  const svg = document.getElementById("brain-anat");
+  const path = document.getElementById("pathway");
+  const layer = document.getElementById("signals");
+  if (!svg || !path || !layer) return;
+  let len = 0, parts = [], last = performance.now(), running = false;
+  function frame(now) {
+    const dt = Math.min(50, now - last); last = now;
+    if (!len) len = path.getTotalLength();
+    if (!len) { requestAnimationFrame(frame); return; }
+    if (Math.random() < dt / 650) parts.push({ d: 0 });
+    let html = "";
+    parts.forEach(p => {
+      p.d += (len / 2600) * dt;                 // ~2.6s eye→cortex
+      const t = p.d / len;
+      const pt = path.getPointAtLength(Math.min(p.d, len));
+      const past = t > 0.5;                      // past the thalamus gate
+      const r = past ? 2.4 + (t - 0.5) * 6 : 2.4; // amplify after the gate
+      const op = t > 0.88 ? Math.max(0, (1 - t) / 0.12) : 1;
+      html += `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="${r.toFixed(1)}" fill="var(--terra)" opacity="${op.toFixed(2)}"/>`;
+    });
+    layer.innerHTML = html;
+    parts = parts.filter(p => p.d < len);
+    requestAnimationFrame(frame);
+  }
+  new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting && !running) { running = true; len = 0; last = performance.now(); requestAnimationFrame(frame); }
+  })).observe(svg);
+})();
+
+/* ── step 4: interactive self-attention map ──────────────────── */
+const A_TOKENS = ["the", "animal", "didn't", "cross", "the", "road", "because", "it", "was", "tired"];
+// semantic pulls: query index -> { key index: boost } (this is what makes "it"→"animal" light up)
+const A_LINKS = { 7: { 1: 2.6, 9: 1.1 }, 9: { 1: 1.5, 7: 0.8 }, 3: { 5: 1.5, 1: 1.1 }, 1: { 3: 0.8, 5: 0.5 }, 6: { 7: 0.9 } };
+function attnRow(q) {
+  const raw = A_TOKENS.map((_, k) => {
+    let s = (k === q ? 1.4 : 0) + Math.max(0, 1.1 - Math.abs(q - k) * 0.32); // self + locality
+    if (A_LINKS[q] && A_LINKS[q][k]) s += A_LINKS[q][k];                       // semantics
+    return Math.exp(s);
+  });
+  const sum = raw.reduce((a, b) => a + b, 0);
+  return raw.map(x => x / sum);
+}
+const amTokens = document.getElementById("amap-tokens");
+const amSvg = document.getElementById("amap-svg");
+const amReadout = document.getElementById("amap-readout");
+let amQuery = 7, amAuto = null;
+
+A_TOKENS.forEach((t, i) => {
+  const d = document.createElement("div");
+  d.className = "amap-tok"; d.id = "am-" + i; d.textContent = t;
+  const wb = document.createElement("div"); wb.className = "wb"; wb.id = "amwb-" + i;
+  d.appendChild(wb);
+  d.addEventListener("click", () => { stopAuto(); setQuery(i); });
+  amTokens.appendChild(d);
+});
+
+function center(el, rect) { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2 - rect.left, y: r.top + r.height / 2 - rect.top }; }
+function setQuery(q) {
+  amQuery = q;
+  const w = attnRow(q);
+  const rect = document.getElementById("amap-stage").getBoundingClientRect();
+  A_TOKENS.forEach((_, i) => {
+    const tok = document.getElementById("am-" + i), wb = document.getElementById("amwb-" + i);
+    tok.classList.toggle("q", i === q);
+    tok.style.background = i === q ? "" : `rgba(160,112,80,${0.12 + w[i] * 0.85})`;
+    tok.style.color = (i !== q && w[i] > 0.28) ? "var(--cream)" : "";
+    wb.style.transform = `scaleX(${w[i].toFixed(3)})`;
+  });
+  const qc = center(document.getElementById("am-" + q), rect);
+  let lines = "";
+  A_TOKENS.forEach((_, i) => {
+    if (i === q) return;
+    const c = center(document.getElementById("am-" + i), rect);
+    const my = Math.min(qc.y, c.y) - 22 - w[i] * 34;
+    lines += `<path class="amap-line" d="M${qc.x.toFixed(1)} ${qc.y.toFixed(1)} Q ${((qc.x + c.x) / 2).toFixed(1)} ${my.toFixed(1)} ${c.x.toFixed(1)} ${c.y.toFixed(1)}" stroke-width="${(0.5 + w[i] * 7).toFixed(2)}" stroke-opacity="${(0.1 + w[i] * 0.85).toFixed(2)}" pathLength="1" style="stroke-dasharray:1;stroke-dashoffset:1;animation:amdraw .5s ease forwards"/>`;
+  });
+  amSvg.innerHTML = lines;
+  const top = w.map((x, i) => [x, i]).filter(p => p[1] !== q).sort((a, b) => b[0] - a[0])[0];
+  amReadout.innerHTML = `“${A_TOKENS[q]}” attends most to “<b>${A_TOKENS[top[1]]}</b>” &nbsp;·&nbsp; ${(top[0] * 100).toFixed(0)}% of its weight`;
+}
+function stopAuto() { if (amAuto) { clearInterval(amAuto); amAuto = null; document.getElementById("amap-auto").textContent = "▶ autoplay"; } }
+document.getElementById("amap-auto").addEventListener("click", () => {
+  if (amAuto) { stopAuto(); return; }
+  document.getElementById("amap-auto").textContent = "❚❚ pause";
+  let i = amQuery; setQuery(i);
+  amAuto = setInterval(() => { i = (i + 1) % A_TOKENS.length; setQuery(i); }, 1700);
+});
+// recompute once the step is actually visible (tokens have real positions then)
+new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) setQuery(amQuery); }))
+  .observe(document.getElementById("amap-stage"));
+window.addEventListener("resize", () => setQuery(amQuery));
+document.getElementById("prev-4").addEventListener("click", () => walk.prev());
+document.getElementById("next-4").addEventListener("click", () => walk.next());
+
+/* ── step 5/6: just nav ──────────────────────────────────────── */
+document.getElementById("prev-5").addEventListener("click", () => walk.prev());
+document.getElementById("next-5").addEventListener("click", () => walk.next());
+document.getElementById("prev-6").addEventListener("click", () => walk.prev());
+document.getElementById("next-6").addEventListener("click", () => walk.next());
+document.getElementById("prev-7").addEventListener("click", () => walk.prev());
+
+/* ── step 7: sit-with timer ──────────────────────────────────── */
+let timerInterval = null;
+const timerCircle = document.getElementById("timer-circle");
+const timerLabel = document.getElementById("timer-label");
+const timerCount = document.getElementById("timer-count");
+const timerBtn = document.getElementById("timer-btn");
+const sitAfter = document.getElementById("sit-after");
+
+timerBtn.addEventListener("click", () => {
+  if (timerInterval) return;
+  let remaining = 10;
+  timerCircle.classList.add("running");
+  timerLabel.textContent = "just notice";
+  timerCount.textContent = `${remaining}s`;
+  timerBtn.disabled = true;
+  timerBtn.textContent = "...";
+  timerInterval = setInterval(() => {
+    remaining--;
+    if (remaining > 0) {
+      timerCount.textContent = `${remaining}s`;
+    } else {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timerCircle.classList.remove("running");
+      timerLabel.textContent = "done";
+      timerCount.textContent = "";
+      timerBtn.style.display = "none";
+      sitAfter.style.display = "block";
+      walk.markComplete();
+    }
+  }, 1000);
+});
+</script>
+</body>
+</html>

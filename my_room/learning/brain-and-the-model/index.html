@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>brain and the model — tiffany os</title>
+<link rel="stylesheet" href="../shared/walk.css">
+<style>
+  .topic-intro {
+    max-width: 640px;
+    margin: 0 auto 40px;
+  }
+  .topic-intro h1 {
+    font-style: italic;
+    font-weight: 400;
+    font-size: 30px;
+    color: var(--ink);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .topic-intro p {
+    color: var(--ink-soft);
+    font-size: 16px;
+    line-height: 1.65;
+    margin-bottom: 12px;
+  }
+  .walk-list {
+    max-width: 640px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .walk-card {
+    display: block;
+    padding: 18px 22px;
+    background: var(--cream-2);
+    border: 1px solid var(--terra-soft);
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.18s ease;
+    position: relative;
+  }
+  .walk-card:hover { background: #FFFBF1; border-color: var(--terra); transform: translateY(-1px); }
+  .walk-card.is-future {
+    opacity: 0.55;
+    pointer-events: none;
+    background: transparent;
+    border-style: dashed;
+  }
+  .walk-card .walk-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--terra);
+    margin-bottom: 6px;
+  }
+  .walk-card .walk-name {
+    font-style: italic;
+    font-size: 19px;
+    color: var(--ink);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+  .walk-card .walk-blurb {
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .walk-card .walk-marker {
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: var(--terra);
+    font-style: italic;
+  }
+  .walk-card .walk-arrow {
+    position: absolute;
+    right: 22px;
+    top: 22px;
+    color: var(--ink-faint);
+    font-family: -apple-system, Arial, sans-serif;
+    font-size: 18px;
+  }
+  .walk-card .walk-steps {
+    position: absolute;
+    right: 22px;
+    bottom: 18px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="spine" aria-hidden="true"></div>
+
+<header class="walk-header">
+  <div class="walk-crumb">
+    <a href="../index.html">learning</a> · brain and the model
+  </div>
+</header>
+
+<div class="topic-intro">
+  <h1>brain and the model</h1>
+  <p>walks through the family resemblance between your brain and a transformer. each walk is 3–7 steps with something to notice, drag, or sit with.</p>
+  <p class="dim" style="color: var(--ink-faint); font-size: 14px; font-style: italic;">re-reading is the default. each visit shows when you last came.</p>
+</div>
+
+<div class="walk-list" id="walk-list">
+  <!-- populated by JS -->
+</div>
+
+<script src="../shared/walk.js"></script>
+<script>
+const WALKS = [
+  {
+    id: "01-attention",
+    num: "walk 1",
+    name: "your attention and a model's attention",
+    blurb: "the entry point. notice your own attention, drag it as a blend, see the brain regions that do the work, watch a transformer's attention layer compute weights. ends with one thing you can do that no model can.",
+    href: "01-attention.html",
+    steps: 7,
+    status: "ready",
+  },
+  {
+    id: "02-brain-attention",
+    name: "how attention works in your brain",
+    blurb: "deep on the neuroscience side. top-down vs bottom-up, thalamic gating, prefrontal control, lateral inhibition, the neuromodulators that turn the volume up and down.",
+    num: "walk 2",
+    steps: 6,
+    status: "future",
+  },
+  {
+    id: "03-transformer-attention",
+    name: "how attention works in a transformer",
+    blurb: "deep on the ml side. Q/K/V intuition and the actual math, scaled dot-product, multi-head, attention as similarity search. the parts you've used without dissecting.",
+    num: "walk 3",
+    steps: 6,
+    status: "future",
+  },
+  {
+    id: "04-convergence",
+    name: "where they converge and diverge",
+    blurb: "the philosophical end of the series. what the analogy lets us see, what it lets us miss, and the asymmetry that matters most — encoding vs inference.",
+    num: "walk 4",
+    steps: 5,
+    status: "future",
+  },
+];
+
+const list = document.getElementById("walk-list");
+WALKS.forEach(w => {
+  const isFuture = w.status === "future";
+  const a = document.createElement(isFuture ? "div" : "a");
+  if (!isFuture) a.href = w.href;
+  a.className = "walk-card" + (isFuture ? " is-future" : "");
+
+  let markerHtml = "";
+  if (!isFuture) {
+    const marker = Walk.getMarker("brain-and-the-model", w.id);
+    const text = Walk.formatMarker(marker);
+    if (text) markerHtml = `<div class="walk-marker">${text}</div>`;
+  }
+  const futureLabel = isFuture ? "<div class=\"walk-marker\" style=\"color: var(--ink-faint)\">— coming, ask anytime</div>" : "";
+
+  a.innerHTML = `
+    <div class="walk-num">${w.num}</div>
+    <div class="walk-name">${w.name}</div>
+    <div class="walk-blurb">${w.blurb}</div>
+    ${markerHtml}
+    ${futureLabel}
+    <div class="walk-arrow">${isFuture ? "·" : "→"}</div>
+    <div class="walk-steps">${w.steps} steps</div>
+  `;
+  list.appendChild(a);
+});
+</script>
+</body>
+</html>

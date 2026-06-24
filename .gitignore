@@ -7,6 +7,12 @@ __pycache__/
 node_modules/
 .next/
 
+# macOS
+.DS_Store
+
+# Claude Code worktrees
+.claude/worktrees/
+
 # Personal training data
 data/sessions/
 

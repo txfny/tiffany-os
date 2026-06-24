@@ -1,8 +1,16 @@
-# Progression Rules — v2 (Body Recomposition Focus)
+# Progression Rules — v3 (Hourglass + Definition Focus)
 #
-# Goal: more defined abs, leaner legs, less arm jiggle, stay lean.
-# This is body recomp — build muscle in target areas while staying lean.
-# Strength training is the priority. Cardio is supplemental.
+# Goal: hourglass figure, 11 abs, defined arms, functional strength.
+# Evidence-based: more core volume (thicker abs show at current BF%),
+# circuit format (equivalent results, better adherence), maintain all
+# other volume (cutting volume = muscle loss per Roth et al. 2022).
+#
+# NOT changing: rep ranges, load caps, leg volume. Research shows
+# rep range doesn't determine "toned vs bulky" (Schoenfeld 2017,
+# effect size 0.03). "Getting wide" was inflammation, not muscle.
+#
+# Training style: circuit (back-to-back rounds, 60-90s rest between).
+# Validated by de Nardi et al. 2023 — identical body comp results.
 #
 # User: 5'0", 105–110 lbs, 24yo, on Tyblume (combined OC).
 # Equipment: home gym (most days), Planet Fitness (Tuesdays).
@@ -27,7 +35,7 @@ weekly_template:
   days:
     monday:
       type: strength
-      focus: "Lower body + core"
+      focus: "Upper body + core"
       location: home_gym
     tuesday:
       type: strength
@@ -146,18 +154,21 @@ exercises:
   leg_curl:
     target: hamstrings (isolation)
     equipment: [planet_fitness_machine]
-    current_load: "TBD — assess on first session"
+    current_load: "50 lb (PF seated machine, as_of 2026-06-09)"
     rep_range: 10–15
     sets: 3
     increment: "5 lbs"
     sequence_priority: 4
-    substitutions:
-      - "Nordic hamstring curl (home — use pull-up bar base or furniture to anchor feet)"
-      - "Slider leg curl (home — towel on floor)"
+    substitutions: []
+    location: planet_fitness_only
     notes: >
-      NEW EXERCISE. Planet Fitness Tuesdays. Directly targets the
-      hamstring area the user wants to lean out. Assess starting weight
-      on first session.
+      PLANET FITNESS ONLY. 6/23/26: home lying leg curl abandoned — she
+      dislikes the setup (lying flat, awkward) and won't do it. Slider and
+      Nordic home subs were both declined (no ankle weight, doesn't want to
+      hold a dumbbell, too much setup). On HOME lower days do NOT prescribe
+      leg curl or any hamstring-isolation sub — the hamstring/posterior
+      chain is covered by hip thrust + squats. Use the seated machine (50 lb)
+      only on Planet Fitness Tuesdays.
 
   sumo_squat:
     target: inner thighs (adductors), glutes, quads
@@ -324,13 +335,16 @@ exercises:
     target: transverse abdominis (deepest core layer)
     equipment: [bodyweight]
     current_load: "bodyweight"
-    rep_range: "10 sec hold"
+    rep_range: "15 sec hold"
     sets: 3
     increment: "increase hold time by 5 sec"
     sequence_priority: 5
+    progression_ladder: "10s → 15s → 20s → 25s → 30s"
+    advance_when: "3 sets at current hold with RPE ≤ 6 (feels easy, could hold longer)"
     notes: >
-      Targets the TVA — the muscle that pulls the stomach flat and creates
-      the tight waistline look. Progress from 10 sec → 15 → 20 → 30 sec holds.
+      KEY exercise for 11-line abs. The TVA pulls the abdomen flat, creating
+      contrast that makes the linea semilunaris (11 lines) more visible.
+      Progress hold time — this is the primary progression vector, not reps.
 
   cable_crunch:
     target: upper abs (rectus abdominis)

@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "Bash(npx:*)"
+      "Bash(npx:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(python3 my_room/build_room.py)",
+      "Bash(python3 -c ' *)",
+      "Bash(open my_room/index.html)"
     ]
   }
 }

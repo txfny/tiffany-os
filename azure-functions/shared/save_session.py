@@ -22,6 +22,7 @@ def save_snapshot(snapshot: dict) -> dict:
         "soreness_lower": snapshot.get("soreness", {}).get("lower", 0),
         "soreness_upper": snapshot.get("soreness", {}).get("upper", 0),
         "soreness_core": snapshot.get("soreness", {}).get("core", 0),
+        "breath_location": snapshot.get("breath_location"),
         "equipment": snapshot.get("equipment"),
         "notes": snapshot.get("notes"),
     }, on_conflict="date").execute()

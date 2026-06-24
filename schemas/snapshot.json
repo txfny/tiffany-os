@@ -124,6 +124,11 @@
       "enum": ["none", "light", "moderate", "heavy"],
       "description": "Only relevant during placebo week. Tracked for iron deficiency awareness."
     },
+    "breath_location": {
+      "type": "string",
+      "enum": ["chest", "mixed", "belly"],
+      "description": "Where the breath naturally sits when first noticed in the morning, BEFORE consciously trying to deepen it. chest = shallow/high, accessory muscles dominant; mixed = some belly engagement but not full; belly = diaphragmatic, relaxed. Tracks default nervous-system state over time. Tiffany's known baseline (2026-05-20) is chest-dominant — belly only moves with conscious focus. Watch for shifts toward 'mixed' or 'belly' as a signal of nervous-system regulation improving."
+    },
     "notes": {
       "type": "string",
       "description": "Freetext. Stress, illness, schedule, fasted, etc."

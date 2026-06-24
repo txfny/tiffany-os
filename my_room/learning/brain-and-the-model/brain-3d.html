@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the attention network, in light — tiffany os</title>
+<link rel="stylesheet" href="../shared/walk.css">
+<style>
+  body { padding: 40px 24px 60px 64px; }
+  .spine { position: fixed; top: 28px; bottom: 28px; left: 36px; width: 1px; border-left: 1px dashed var(--terra-line); pointer-events: none; }
+  .wrap { max-width: 740px; margin: 0 auto; }
+  .crumb { font-size: 12px; color: var(--ink-faint); font-style: italic; margin-bottom: 6px; }
+  .crumb a { color: var(--ink-faint); text-decoration: none; border-bottom: 1px dotted var(--terra-line); }
+  .crumb a:hover { color: var(--ink); }
+  h1 { font-style: italic; font-weight: 400; font-size: 30px; color: var(--ink); margin-bottom: 6px; }
+  .lede { font-style: italic; color: var(--ink-soft); font-size: 15px; max-width: 580px; margin-bottom: 22px; }
+  #stage { width: 100%; height: 60vh; min-height: 380px; border-radius: 16px; overflow: hidden; position: relative;
+           background: radial-gradient(circle at 50% 45%, #0a1224, #03050b 70%); cursor: grab; box-shadow: inset 0 0 60px rgba(0,0,0,.6); }
+  #stage:active { cursor: grabbing; }
+  #stage canvas { display: block; }
+  .hint { position: absolute; left: 16px; top: 14px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; color: rgba(150,190,230,.5); pointer-events: none; }
+  .tour { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); width: min(560px, 90%);
+          background: rgba(8,16,32,.85); border: 1px solid rgba(110,180,255,.35); border-radius: 14px; padding: 14px 18px; backdrop-filter: blur(3px); }
+  .tour-text { color: #e9f3ff; font-style: italic; font-size: 15px; line-height: 1.5; min-height: 22px; }
+  .tour-text b { color: #ffb27a; font-style: normal; font-weight: 400; }
+  .tour-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 10px; }
+  .tour-step { font-family: var(--font-mono); font-size: 10px; color: rgba(150,190,230,.7); }
+  .tour-btn { font-family: var(--font-mono); font-size: 12px; color: #1a0e06; background: #ff7a33; border: 0; border-radius: 999px; padding: 6px 16px; cursor: pointer; }
+  .tour-btn:hover { background: #ff9152; }
+  .tour-btn.alt { background: #49b8ff; }
+  .tour-btn.alt:hover { background: #6fc8ff; }
+  .blabel { position: absolute; top: 0; left: 0; font-family: var(--font-mono); font-size: 10px; letter-spacing: .04em;
+            color: #bfe6ff; background: rgba(8,16,32,.7); border: 1px solid rgba(110,180,255,.4); border-radius: 999px;
+            padding: 3px 9px; cursor: pointer; white-space: nowrap; pointer-events: auto; transition: opacity .2s, background .2s; }
+  .blabel:hover { background: rgba(20,40,70,.95); }
+  .blabel.active { background: #ff7a33; color: #1a0e06; border-color: #ff7a33; }
+  .pills { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .pill { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); background: var(--cream-2); border: 1px solid var(--terra-soft); border-radius: 999px; padding: 6px 13px; cursor: pointer; }
+  .pill:hover { border-color: var(--terra); color: var(--terra); }
+  .pill.active { background: var(--terra); color: var(--cream); border-color: var(--terra); }
+  .pill.go { border-color: var(--terra); color: var(--terra); font-weight: 600; }
+  .panel { margin-top: 16px; background: var(--cream-2); border: 1px solid var(--terra-soft); border-radius: 12px; padding: 16px 18px; min-height: 84px; }
+  .panel .name { font-style: italic; color: var(--terra); font-size: 16px; margin-bottom: 6px; }
+  .panel .body { font-style: italic; color: var(--ink-soft); font-size: 14px; line-height: 1.6; }
+  .note { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); line-height: 1.6; margin-top: 14px; font-style: italic; }
+  .err { color: #b9603f; }
+</style>
+</head>
+<body>
+<div class="spine"></div>
+<div class="wrap">
+  <div class="crumb"><a href="01-attention.html">← attention walk</a> · <a href="../index.html">learning</a></div>
+  <h1>the attention network</h1>
+  <p class="lede">your brain as a glowing web of fiber tracts. click a region to see its job in attention — or hit <em>simulate attention</em> and watch one pathway amplify while the rest gate down.</p>
+
+  <div id="stage">
+    <div class="hint">drag to rotate · scroll to zoom</div>
+    <div class="tour" id="tour">
+      <div class="tour-text" id="tour-text">a guided tour through your attention network — press start.</div>
+      <div class="tour-nav"><span class="tour-step" id="tour-step"></span>
+        <span style="display:flex;gap:8px"><button class="tour-btn alt" id="tour-thought">▸ a thought forms</button><button class="tour-btn" id="tour-next">▸ start the tour</button></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="pills" id="pills"></div>
+  <div class="panel"><div class="name" id="p-name">your attention network</div><div class="body" id="p-body">click a glowing region, or “simulate attention,” to see how the brain makes one stream louder than the rest — the same weighted blend the model does with softmax.</div></div>
+  <p class="note" id="note">built with three.js + a glow pass · loads from the web (needs internet) · each line is a bundle of nerve fibers</p>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+const note = document.getElementById("note");
+try {
+  const THREE = await import("three");
+  const { OrbitControls } = await import("three/addons/controls/OrbitControls.js");
+  let bloomMods = null;
+  try {
+    const { EffectComposer } = await import("three/addons/postprocessing/EffectComposer.js");
+    const { RenderPass } = await import("three/addons/postprocessing/RenderPass.js");
+    const { UnrealBloomPass } = await import("three/addons/postprocessing/UnrealBloomPass.js");
+    bloomMods = { EffectComposer, RenderPass, UnrealBloomPass };
+  } catch (e) { console.warn("bloom unavailable", e); }
+
+  const stage = document.getElementById("stage");
+  const W = () => stage.clientWidth, H = () => stage.clientHeight;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(42, W() / H(), 0.1, 100);
+  camera.position.set(0, 0.3, 5.4);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(W(), H()); renderer.setClearColor(0x03050b, 1);
+  stage.appendChild(renderer.domElement);
+
+  const RX = 1.3, RY = 1.0, RZ = 1.55;
+  const rnd = (a = 1) => (Math.random() * 2 - 1) * a;
+  const jitter = (a) => new THREE.Vector3(rnd(a), rnd(a), rnd(a));
+  function onSurface() {
+    const u = Math.random() * Math.PI * 2, v = Math.acos(2 * Math.random() - 1);
+    return new THREE.Vector3(RX * Math.sin(v) * Math.cos(u), RY * Math.cos(v), RZ * Math.sin(v) * Math.sin(u));
+  }
+  const BLUE = 0x49b8ff, CYAN = 0x6fd6ff, GREEN = 0x4ee0a0, ORANGE = 0xff7a33;
+
+  // learning regions (tied to the attention walk)
+  const REGIONS = [
+    { key: "prefrontal", name: "prefrontal cortex", pos: new THREE.Vector3(0, 0.25, 1.35),
+      body: "the goal-holder. it keeps what you're <em>trying</em> to focus on and sends top-down “amplify this” signals down into the rest of cortex. this is voluntary, effortful attention." },
+    { key: "thalamus", name: "the thalamus", pos: new THREE.Vector3(0, -0.05, 0),
+      body: "the gate. every sense passes through here first — it decides what even reaches the cortex. attention begins as the thalamus turning streams up or down." },
+    { key: "parietal", name: "parietal lobe", pos: new THREE.Vector3(0.15, 0.92, -0.25),
+      body: "the aim — spatial attention. where to look next, where things are in space. damage here and half the world quietly disappears without you noticing." },
+    { key: "visual", name: "visual cortex", pos: new THREE.Vector3(0, -0.05, -1.45),
+      body: "the screen. vision gets unpacked here into edges, motion, faces. attention sharpens the parts that matter — the rest stays blurry even though your eyes caught it." },
+    { key: "temporal", name: "temporal lobe", pos: new THREE.Vector3(-0.95, -0.4, -0.2),
+      body: "the side of your brain — sound, language, and memory of objects and faces. it's where “a cat” becomes “<em>Mochi</em>, the neighbor's cat.” recognition lives here." },
+    { key: "amygdala", name: "amygdala", pos: new THREE.Vector3(0.15, -0.55, 0.35),
+      body: "a deep almond of emotion. it tags what you see with feeling — safe, scary, sweet — <em>before</em> you've finished thinking. it's why you feel about the cat before you decide anything." },
+  ];
+  function nearestRegion(p) {
+    let best = REGIONS[0], bd = 1e9;
+    REGIONS.forEach(r => { const d = p.distanceTo(r.pos); if (d < bd) { bd = d; best = r; } });
+    return best.key;
+  }
+
+  const group = new THREE.Group(); scene.add(group);
+  const fibers = [], nodePts = [];
+  function addFiber(start, end, color, bulge) {
+    const mid = start.clone().add(end).multiplyScalar(0.5);
+    const out = mid.clone().normalize().multiplyScalar(bulge);
+    const c1 = start.clone().lerp(mid, 0.5).add(out.clone().multiplyScalar(0.45)).add(jitter(0.18));
+    const c2 = end.clone().lerp(mid, 0.5).add(out.clone().multiplyScalar(0.45)).add(jitter(0.18));
+    const curve = new THREE.CatmullRomCurve3([start, c1, mid.clone().add(out.clone().multiplyScalar(0.22)), c2, end]);
+    const pts = curve.getPoints(38);
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
+    const line = new THREE.Line(geo, mat);
+    group.add(line);
+    fibers.push({ line, base: 0.5, region: nearestRegion(mid) });
+    for (let k = 0; k < pts.length; k += 11) if (Math.random() < 0.35) nodePts.push(pts[k]);
+  }
+  for (let i = 0; i < 95; i++) {
+    const a = onSurface(), b = onSurface();
+    if (a.distanceTo(b) > 2.6) { i--; continue; }
+    const roll = Math.random();
+    const color = roll < 0.82 ? (Math.random() < 0.5 ? BLUE : CYAN) : roll < 0.93 ? GREEN : ORANGE;
+    addFiber(a, b, color, a.clone().add(b).multiplyScalar(0.5).length() * 0.32 + 0.15);
+  }
+  [new THREE.Vector3(-0.35, -0.15, 0.2), new THREE.Vector3(0.55, 0.05, -0.25)].forEach(core => {
+    for (let i = 0; i < 26; i++) {
+      const end = onSurface().multiplyScalar(0.55 + Math.random() * 0.5);
+      const color = Math.random() < 0.4 ? ORANGE : Math.random() < 0.5 ? GREEN : BLUE;
+      addFiber(core.clone().add(jitter(0.05)), end, color, 0.1);
+    }
+  });
+
+  const ngeo = new THREE.BufferGeometry().setFromPoints(nodePts);
+  group.add(new THREE.Points(ngeo, new THREE.PointsMaterial({ color: 0x9fe0ff, size: 0.028, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false })));
+
+  // region marker glows
+  REGIONS.forEach(r => {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 16),
+      new THREE.MeshBasicMaterial({ color: 0xbfe6ff, transparent: true, opacity: 0.95 }));
+    m.position.copy(r.pos); group.add(m); r.marker = m;
+  });
+
+  // starfield
+  const stars = [];
+  for (let i = 0; i < 260; i++) {
+    const r = 9 + Math.random() * 13, u = Math.random() * Math.PI * 2, v = Math.acos(2 * Math.random() - 1);
+    stars.push(new THREE.Vector3(r * Math.sin(v) * Math.cos(u), r * Math.cos(v), r * Math.sin(v) * Math.sin(u)));
+  }
+  scene.add(new THREE.Points(new THREE.BufferGeometry().setFromPoints(stars),
+    new THREE.PointsMaterial({ color: 0x6fa8d0, size: 0.045, transparent: true, opacity: 0.4, depthWrite: false })));
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.07;
+  controls.autoRotate = true; controls.autoRotateSpeed = 0.6;
+  controls.minDistance = 3.5; controls.maxDistance = 13;
+
+  let comp = null, bloom = null;
+  if (bloomMods) {
+    comp = new bloomMods.EffectComposer(renderer);
+    comp.addPass(new bloomMods.RenderPass(scene, camera));
+    bloom = new bloomMods.UnrealBloomPass(new THREE.Vector2(W(), H()), 0.7, 0.5, 0.2);
+    comp.addPass(bloom);
+  }
+
+  // ── interactivity: select a region / simulate attention ──
+  let selected = null, simulate = false, t = 0;
+  function setPanel(name, body) { document.getElementById("p-name").innerHTML = name; document.getElementById("p-body").innerHTML = body; }
+  function applyHighlight() {
+    fibers.forEach(f => {
+      if (!selected) { f.line.material.opacity = f.base; }
+      else { f.line.material.opacity = (f.region === selected) ? 0.92 : 0.06; }
+    });
+    REGIONS.forEach(r => { r.marker.material.opacity = (!selected || r.key === selected) ? 0.95 : 0.2; });
+    labels.forEach((el, i) => el.classList.toggle("active", REGIONS[i].key === selected));
+  }
+  function select(key) {
+    selected = key; simulate = false;
+    const r = REGIONS.find(x => x.key === key);
+    setPanel(r.name, r.body);
+    applyHighlight();
+    document.querySelectorAll(".pill[data-region]").forEach(p => p.classList.toggle("active", p.dataset.region === key));
+    document.getElementById("pill-sim").classList.remove("active");
+  }
+  function showAll() {
+    selected = null; simulate = false; applyHighlight();
+    setPanel("your attention network", "click a glowing region, or “simulate attention,” to see how the brain makes one stream louder than the rest.");
+    document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+  }
+  function simAttention() {
+    selected = "visual"; simulate = true; applyHighlight();
+    setPanel("attention, firing", "the visual pathway <b>amplifies</b> (bright) while every other stream <b>gates down</b> (dim). one louder, the rest softer — that's the weighted blend. it's the exact shape of <em>softmax(QKᵀ/√d)·V</em> from step 4 of the walk.");
+    document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+    document.getElementById("pill-sim").classList.add("active");
+    labels.forEach((el, i) => el.classList.toggle("active", REGIONS[i].key === "visual"));
+  }
+
+  // pills
+  const pills = document.getElementById("pills");
+  REGIONS.forEach(r => { const p = document.createElement("div"); p.className = "pill"; p.dataset.region = r.key; p.textContent = r.name; p.onclick = () => select(r.key); pills.appendChild(p); });
+  const allP = document.createElement("div"); allP.className = "pill"; allP.textContent = "show all"; allP.onclick = showAll; pills.appendChild(allP);
+  const simP = document.createElement("div"); simP.className = "pill go"; simP.id = "pill-sim"; simP.textContent = "▸ simulate attention"; simP.onclick = simAttention; pills.appendChild(simP);
+
+  // floating labels (projected each frame)
+  const labels = REGIONS.map(r => { const el = document.createElement("div"); el.className = "blabel"; el.textContent = r.name; el.onclick = () => select(r.key); stage.appendChild(el); return el; });
+
+  // ── guided tour: narrate the lesson, lighting up each part as it speaks ──
+  const TOUR = [
+    { t: "this is your <b>attention network</b> — every sense and thought, wired together. drag it around.", act: showAll },
+    { t: "a signal arrives. the <b>thalamus</b> is the gate — it decides what even reaches your cortex.", act: () => select("thalamus") },
+    { t: "the <b>prefrontal cortex</b> holds your goal, and sends “amplify <em>this</em>” signals into the rest of the brain.", act: () => select("prefrontal") },
+    { t: "now attention <b>fires</b>: one pathway gets loud (vision), and everything else goes quiet.", act: simAttention },
+    { t: "that's the whole idea — a <b>weighted blend</b>. one louder, the rest softer. the exact move the model makes with <em>softmax</em>. ✨", act: () => {} },
+  ];
+  let ti = -1;
+  const tNext = document.getElementById("tour-next"), tText = document.getElementById("tour-text"), tStep = document.getElementById("tour-step");
+  tNext.onclick = () => {
+    ti++;
+    if (ti >= TOUR.length) { ti = -1; showAll(); tText.innerHTML = "that's the tour 🤍 click any region to explore on your own, or press start to run it again."; tStep.textContent = ""; tNext.textContent = "▸ start the tour"; return; }
+    const s = TOUR[ti]; s.act();
+    tText.innerHTML = s.t;
+    tStep.textContent = (ti + 1) + " / " + TOUR.length;
+    tNext.textContent = ti === TOUR.length - 1 ? "done ✓" : "next ▸";
+  };
+
+  // ── "watch a thought form": a signal travels the REAL pathway, narrated ──
+  const pulse = new THREE.Mesh(new THREE.SphereGeometry(0.11, 18, 18), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  pulse.visible = false; scene.add(pulse);
+  // glowing comet trail
+  const trailPts = [], trailGeo = new THREE.BufferGeometry();
+  const trail = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({ color: 0xbfe6ff, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }));
+  trail.visible = false; scene.add(trail);
+  // a ripple that flashes when the signal arrives somewhere
+  function ripple(pos, color) {
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.05, 0.085, 28), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
+    ring.position.copy(pos); ring.lookAt(camera.position); scene.add(ring);
+    const t0 = performance.now();
+    (function st() { const k = (performance.now() - t0) / 850; ring.scale.setScalar(1 + k * 7); ring.material.opacity = 0.9 * (1 - k); ring.lookAt(camera.position); if (k < 1) requestAnimationFrame(st); else scene.remove(ring); })();
+  }
+  const RPOS = k => REGIONS.find(r => r.key === k).pos;
+  const THOUGHT = [
+    { pos: new THREE.Vector3(-2.5, -0.2, 0.9), region: null, cap: "a cat walks into view. light hits your <b>eye</b> and becomes an electrical signal." },
+    { pos: RPOS("thalamus"), region: "thalamus", cap: "the <b>thalamus</b> — the gate. it decides the signal matters and passes it up to the cortex." },
+    { pos: RPOS("visual"), region: "visual", cap: "the <b>visual cortex</b> unpacks it — edges, fur, motion → shapes that mean “a cat.”" },
+    { pos: RPOS("temporal"), region: "temporal", cap: "the <b>temporal lobe</b> matches it to memory: not just any cat — that's <em>Mochi</em>, the neighbor's cat." },
+    { pos: RPOS("amygdala"), region: "amygdala", cap: "the <b>amygdala</b> tags it with feeling — a little spark of warmth — before you've even finished thinking." },
+    { pos: RPOS("prefrontal"), region: "prefrontal", cap: "the <b>prefrontal cortex</b> decides it's worth it. you attend. you smile." },
+    { pos: RPOS("prefrontal"), region: "prefrontal", cap: "perceive → recognize → remember → feel → attend. one whole <b>thought</b>, in about a third of a second. ⚡" },
+  ];
+  let thinking = false;
+  const ease = k => k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+  function tween(to, dur) { return new Promise(res => { const from = pulse.position.clone(), t0 = performance.now(); (function st() { const k = Math.min(1, (performance.now() - t0) / dur); pulse.position.lerpVectors(from, to, ease(k)); if (k < 1) requestAnimationFrame(st); else res(); })(); }); }
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  document.getElementById("tour-thought").onclick = async () => {
+    if (thinking) return; thinking = true; trailPts.length = 0; controls.autoRotate = false;
+    showAll(); pulse.visible = true; pulse.position.copy(THOUGHT[0].pos); ripple(THOUGHT[0].pos, 0xbfe6ff);
+    for (let i = 0; i < THOUGHT.length; i++) {
+      const s = THOUGHT[i];
+      if (i > 0) await tween(s.pos, 2400);
+      s.region ? select(s.region) : showAll();
+      ripple(s.pos, i >= 4 ? 0xff7a33 : 0xbfe6ff);
+      tText.innerHTML = s.cap; tStep.textContent = "thought · " + (i + 1) + " / " + THOUGHT.length;
+      await wait(3000);
+    }
+    pulse.visible = false; trail.visible = false; trailPts.length = 0; thinking = false;
+    tText.innerHTML = "that was one thought, traced through your real brain. press <b>a thought forms</b> to watch again, or explore the regions yourself.";
+    tStep.textContent = "";
+  };
+
+  function resize() { camera.aspect = W() / H(); camera.updateProjectionMatrix(); renderer.setSize(W(), H()); if (comp) comp.setSize(W(), H()); }
+  window.addEventListener("resize", resize);
+
+  (function loop() {
+    requestAnimationFrame(loop);
+    controls.update();
+    if (thinking && pulse.visible) {
+      trailPts.push(pulse.position.clone()); if (trailPts.length > 80) trailPts.shift();
+      trailGeo.setFromPoints(trailPts); trail.visible = true;
+    }
+    if (simulate) { t += 0.05; fibers.forEach((f, i) => { if (f.region === "visual") f.line.material.opacity = 0.55 + 0.35 * (0.5 + 0.5 * Math.sin(t + i * 0.2)); }); }
+    // project labels to screen
+    REGIONS.forEach((r, i) => {
+      const p = r.pos.clone().project(camera);
+      // only the selected region's label shows — kills the center pile-up
+      const show = (p.z < 1) && (r.key === selected);
+      labels[i].style.opacity = show ? 1 : 0;
+      labels[i].style.pointerEvents = show ? "auto" : "none";
+      labels[i].style.transform = `translate(-50%,-50%) translate(${(p.x * .5 + .5) * W()}px, ${(-p.y * .5 + .5) * H()}px)`;
+    });
+    comp ? comp.render() : renderer.render(scene, camera);
+  })();
+} catch (e) {
+  note.innerHTML = '<span class="err">couldn\'t load three.js — check your internet, then refresh.</span>';
+  console.error(e);
+}
+</script>
+</body>
+</html>

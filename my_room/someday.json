@@ -1,0 +1,130 @@
+{
+  "_source": "imported from reminders-list.pdf (exported 6/16/26). re-export the list to a PDF and ask Claude to re-import to sync (completed items drop off automatically).",
+  "areas": [
+    {
+      "area": "social & shared",
+      "sections": [
+        {
+          "title": "with others",
+          "note": "new friends / groups",
+          "items": [
+            "maybe try 222? or /nycmeetup",
+            "take up a book club — avenue a",
+            "hang in a gaming cafe",
+            "pilates with jenny (when she's ready)",
+            "sip and paint night",
+            "ceramics workshop (drop-in open studio)",
+            "makerspace event",
+            "spyscape (act like a spy)",
+            "go to annie's ibiza (midnight dress)"
+          ]
+        },
+        {
+          "title": "with chris",
+          "note": "relationship time",
+          "items": [
+            "take a pottery class",
+            "take a cooking class",
+            "take a painting class",
+            "free art classes at the met (every 2nd saturday)",
+            "go to comedy cellar",
+            "nyc drawing room, chelsea — unlimited art + coffee $20",
+            "do an escape room",
+            "puppy yoga class",
+            "stoned pizza in east village (worth going)",
+            "visit a dance studio",
+            "brookfield place (downtown crazy views)",
+            "visit this cozy cafe",
+            "morgan library & museum (free friday)",
+            "the plushie workshop",
+            "wick & pour (make candles)",
+            "top secret comedy club — 44 ave a",
+            "museums of the moving image — cute notebook"
+          ]
+        }
+      ]
+    },
+    {
+      "area": "travel & getaways",
+      "sections": [
+        {
+          "title": "big trips",
+          "note": "need pto + planning",
+          "items": [
+            "australia in jan?",
+            "london → paris → edinburgh (all by train)"
+          ]
+        },
+        {
+          "title": "medium trips",
+          "note": "weekend / short flights",
+          "items": [
+            "denver / boulder with chris (weed trip)",
+            "new orleans with chris",
+            "oklahoma treehouse — needs 10 guests (5 bedrooms)"
+          ]
+        },
+        {
+          "title": "local & fun",
+          "note": "",
+          "items": [
+            "six flags at oktoberfest"
+          ]
+        }
+      ]
+    },
+    {
+      "area": "solo recharge",
+      "sections": [
+        {
+          "title": "reading before bed",
+          "note": "weekdays",
+          "items": [
+            "finish \"how to expect the unexpected\"",
+            "more romance novels",
+            "more mystery novels"
+          ]
+        },
+        {
+          "title": "creative / mindful",
+          "note": "",
+          "items": [
+            "embroider clothes again",
+            "finish my youtube watch-later list"
+          ]
+        },
+        {
+          "title": "learning goals",
+          "note": "with chat",
+          "items": [
+            "study neuroscience / ai / psychology",
+            "study arabic (reading + writing) 🐘"
+          ]
+        }
+      ]
+    },
+    {
+      "area": "quick wins · bucket list",
+      "sections": [
+        {
+          "title": "",
+          "note": "",
+          "items": [
+            "get my elephant tattoo",
+            "upgrade my wardrobe",
+            "fit in a massage",
+            "get free entry on bday to qcny spa — 8/5/26",
+            "book a lymphatic drainage",
+            "make your own candle",
+            "give blood (find out blood type)",
+            "caffe paradiso",
+            "suka sushi",
+            "lexington candy shop — try original coke",
+            "GO TO THIS PLACE",
+            "vintage bookstore (has maps, maybe buy)"
+          ]
+        }
+      ]
+    }
+  ]
+}

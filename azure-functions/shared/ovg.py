@@ -15,15 +15,16 @@ def run_ovg(session_plan: dict, target_date: date, working_weights: dict) -> dic
     errors = []
     warnings = []
 
-    # 1. Date/day accuracy
+    # 1. Date/day accuracy (skip if session was rescheduled)
     expected = get_session_type(target_date)
-    if session_plan.get("session_type") and session_plan["session_type"] != expected["type"]:
-        errors.append({
-            "check": "session_type_mismatch",
-            "expected": expected["type"],
-            "got": session_plan["session_type"],
-            "message": f"Session type should be '{expected['type']}' for {expected['day_name']}, got '{session_plan['session_type']}'"
-        })
+    if not session_plan.get("rescheduled_from"):
+        if session_plan.get("session_type") and session_plan["session_type"] != expected["type"]:
+            errors.append({
+                "check": "session_type_mismatch",
+                "expected": expected["type"],
+                "got": session_plan["session_type"],
+                "message": f"Session type should be '{expected['type']}' for {expected['day_name']}, got '{session_plan['session_type']}'"
+            })
 
     # 2. Working weight validation
     exercises = session_plan.get("exercises", [])
@@ -41,8 +42,8 @@ def run_ovg(session_plan: dict, target_date: date, working_weights: dict) -> dic
                     "message": f"{ex['name']}: prescribed {prescribed_load} but latest logged weight is {current}"
                 })
 
-    # 3. Strength on non-strength day
-    if expected["type"] in ("rest", "active_recovery", "cardio"):
+    # 3. Strength on non-strength day (skip if rescheduled)
+    if expected["type"] in ("rest", "active_recovery", "cardio") and not session_plan.get("rescheduled_from"):
         strength_exercises = [e for e in exercises if e.get("type") == "strength"]
         if strength_exercises:
             warnings.append({

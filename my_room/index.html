@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the room — tiffany os</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F2EADB; --paper-2: #F8F1E4; --paper-3: #EADFC9;
+    --ink: #4A4136; --ink-soft: #6E6354; --ink-faint: #A4977F;
+    --line: rgba(74,65,54,.30); --line-soft: rgba(74,65,54,.15);
+    --honey: #E7BE76; --sage: #9CAE86; --sage-soft: #C9D6B8; --blush: #D69E8E; --blush-soft: #EBD0C7;
+    --dusk: #C7B2CE; --skyblue: #AEC8CC;
+    --serif: "Newsreader", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+    --win-sky: #CBDDDA;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--paper); }
+  body { font-family: var(--serif); color: var(--ink); font-size: 17px; line-height: 1.6; font-weight: 300; -webkit-font-smoothing: antialiased; }
+  body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5;
+    background-image: radial-gradient(circle at 25% 35%, rgba(74,65,54,.02) 1px, transparent 2px),
+                      radial-gradient(circle at 75% 70%, rgba(74,65,54,.02) 1px, transparent 2px);
+    background-size: 26px 26px, 34px 34px; }
+
+  /* cozy line-drawn decorations in the corners */
+  .decor { position: fixed; z-index: 0; pointer-events: none; opacity: .9;
+           stroke: var(--sage); fill: none; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+  .decor .pot { stroke: var(--ink-faint); fill: var(--paper-3); }
+  .decor.left { left: 8px; bottom: 0; width: 120px; height: 150px; }
+  .decor.right { right: 14px; top: 76px; width: 96px; height: 140px; }
+  /* string lights */
+  .lights { position: fixed; top: 0; left: 0; right: 0; z-index: 4; pointer-events: none; line-height: 0; }
+  .lights .wire { fill: none; stroke: var(--ink-faint); stroke-width: 1; opacity: .6; }
+  .lights .bulb { fill: var(--paper-3); stroke: var(--ink-faint); stroke-width: .7; transition: fill .3s, filter .3s; }
+  body.cozy .lights .bulb { fill: var(--honey); filter: drop-shadow(0 0 3px rgba(231,190,118,.85)); }
+  /* eyes follow + blink */
+  #eyes { transform-box: fill-box; transform-origin: center; transition: transform .08s ease-out; }
+  #eyes.blink { animation: blink2 .17s ease; }
+  @keyframes blink2 { 50% { transform: scaleY(.12); } }
+  /* floating hearts */
+  .heart { position: fixed; z-index: 8; pointer-events: none; color: var(--blush); font-size: 17px; animation: floatup 1.1s ease-out forwards; }
+  @keyframes floatup { 0%{opacity:0;transform:translateY(0) scale(.6)} 20%{opacity:1} 100%{opacity:0;transform:translateY(-50px) scale(1.15)} }
+  /* framed picture */
+  .decor.pic { stroke: var(--ink-faint); }
+  /* rug under everything */
+  .rug { width: min(460px, 78vw); margin: 34px auto 0; z-index: 0; pointer-events: none; opacity: .38; }
+  .rug svg { width: 100%; height: auto; fill: none; stroke: var(--ink-faint); stroke-width: 1.2; stroke-linecap: round; }
+  /* shelf + steaming tea */
+  .decor.shelf { right: 16px; top: 250px; width: 124px; height: 120px; stroke: var(--ink-faint); }
+  .steam { transform-box: fill-box; transform-origin: center; }
+  .steam1 { animation: steam 2.6s ease-in-out infinite; }
+  .steam2 { animation: steam 2.6s ease-in-out .9s infinite; }
+  @keyframes steam { 0%{opacity:0;transform:translateY(3px)} 35%{opacity:.6} 100%{opacity:0;transform:translateY(-9px)} }
+  /* sleeping cat */
+  .decor.cat { left: 150px; bottom: 8px; width: 96px; height: 64px; stroke: var(--ink); }
+  /* buddy name tag */
+  .bud-name { font-family: var(--mono); font-size: 9px; letter-spacing: .05em; color: var(--ink-faint); text-align: center; margin-top: 5px; cursor: pointer; }
+  .bud-name:hover { color: var(--blush); }
+  /* music player */
+  .spotify-frame { width: 100%; border: 0; border-radius: 14px; display: block; }
+  .music-note { font-family: var(--mono); font-size: 9px; letter-spacing: .04em; color: var(--ink-faint); margin-top: 9px; line-height: 1.5; }
+  /* window seat cushion */
+  .seat { position: relative; flex: 0 0 auto; }
+  .seat .cushion { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 92px; height: 34px; z-index: 0; }
+  .seat .avatar { position: relative; z-index: 1; }
+  /* weather drifting in the window */
+  .weather { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
+  .flake { position: absolute; top: -16px; width: 11px; animation: fall linear infinite; }
+  .flake svg { width: 100%; display: block; }
+  .flake.rain { width: 4px; }
+  @keyframes fall { 0%{transform:translateY(-16px) translateX(0) rotate(0);opacity:0} 14%{opacity:.85} 86%{opacity:.85} 100%{transform:translateY(168px) translateX(var(--sx,8px)) rotate(var(--rot,140deg));opacity:0} }
+  /* confetti on a checked-off wish */
+  .confetti { position: fixed; z-index: 9; pointer-events: none; width: 8px; height: 8px; border-radius: 1px; animation: pop 1.25s ease-out forwards; }
+  @keyframes pop { to { transform: translate(var(--dx,0), var(--dy,160px)) rotate(var(--r,180deg)); opacity: 0; } }
+
+  @media (max-width: 540px) { .decor { display: none; } .lights { display: none; } }
+
+  .wrap { position: relative; z-index: 1; max-width: 660px; margin: 0 auto; padding: 0 24px 90px 64px; }
+  .spine { position: fixed; top: 32px; bottom: 32px; left: 36px; width: 1px; border-left: 1px dashed var(--line-soft); pointer-events: none; z-index: 1; }
+
+  /* ── hero ── */
+  .hero { padding: 52px 0 18px; }
+
+  /* the window — soft color lives here, cozy and contained */
+  .window { position: relative; height: 156px; border: 2px solid var(--ink); border-radius: 84px 84px 16px 16px;
+            background: linear-gradient(180deg, var(--win-sky), color-mix(in srgb, var(--win-sky) 55%, var(--paper-2)));
+            overflow: hidden; box-shadow: 0 6px 0 var(--line-soft); margin-bottom: 28px; max-width: 360px; }
+  .win-bar-v { position: absolute; top: 0; bottom: 0; left: 50%; width: 1.5px; background: var(--ink); opacity: .35; }
+  .win-bar-h { position: absolute; left: 0; right: 0; top: 60%; height: 1.5px; background: var(--ink); opacity: .35; }
+  .window .scene { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; }
+  .scene svg { overflow: visible; width: 280px; }
+  .draw path, .draw line, .draw circle, .draw polyline {
+    fill: none; stroke: var(--scene-ink, var(--ink)); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+    pathLength: 1; stroke-dasharray: 1; stroke-dashoffset: 1; }
+  .draw .sun-fill { fill: var(--honey); stroke: none; opacity: .5; }
+  @media (prefers-reduced-motion: no-preference) {
+    .draw .d { animation: draw 1.6s ease forwards; } .draw .d2 { animation: draw 1.6s ease .5s forwards; }
+    .draw .d3 { animation: draw 1.4s ease 1s forwards; } .draw .sun-fill { animation: fadein 1s ease 1.2s both; }
+  }
+  @media (prefers-reduced-motion: reduce) { .draw path,.draw line,.draw circle,.draw polyline { stroke-dashoffset: 0; } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes fadein { from { opacity: 0; } to { opacity: .5; } }
+
+  .eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 12px; }
+  .greeting { font-style: italic; font-weight: 300; font-size: clamp(30px, 5vw, 46px); line-height: 1.08; color: var(--ink); letter-spacing: -0.01em; margin-bottom: 22px; }
+
+  /* avatar + dialogue (the lil game bit) */
+  .say { display: flex; align-items: flex-end; gap: 14px; }
+  .avatar { flex: 0 0 auto; animation: bob 3.2s ease-in-out infinite; }
+  @keyframes bob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-5px) } }
+  .dialog { position: relative; flex: 1; background: var(--paper-2); border: 1.6px solid var(--ink);
+            border-radius: 16px; padding: 15px 18px 17px; box-shadow: 0 5px 0 var(--line-soft); }
+  .dialog::before { content: ""; position: absolute; left: -9px; bottom: 20px; width: 14px; height: 14px;
+            background: var(--paper-2); border-left: 1.6px solid var(--ink); border-bottom: 1.6px solid var(--ink); transform: rotate(45deg); }
+  .moment-q { font-family: var(--mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--blush); margin-bottom: 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-style: italic; font-size: 13.5px; color: var(--ink-soft); background: var(--paper);
+          border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; cursor: pointer; transition: all .15s ease; }
+  .chip:hover { border-color: var(--sage); color: var(--ink); transform: translateY(-1px); }
+  .chip.active { background: var(--sage); color: var(--paper-2); border-color: var(--sage); }
+  .whisper { margin-top: 12px; min-height: 26px; font-style: italic; font-size: clamp(17px, 2.4vw, 21px); color: var(--ink); line-height: 1.4; opacity: 0; transition: opacity .35s ease; }
+  .whisper.show { opacity: 1; }
+  .whisper strong { font-weight: 400; background: linear-gradient(transparent 60%, var(--blush-soft) 60%); }
+  .whisper a { color: inherit; }
+  .whisper .reroll { font-family: var(--mono); font-style: normal; font-size: 9px; color: var(--ink-faint); cursor: pointer; margin-left: 9px; border-bottom: 1px dotted; }
+  .cont { position: absolute; right: 13px; bottom: 7px; color: var(--ink-faint); font-size: 11px; animation: blink 1.1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0 } }
+
+  .journal { font-style: italic; font-size: 16px; color: var(--ink-soft); line-height: 1.65; padding: 36px 0 6px; }
+  .journal b { font-weight: 400; color: var(--ink); font-style: normal; }
+
+  /* doors */
+  .doors { margin-top: 8px; }
+  .door { border-top: 1px dashed var(--line-soft); }
+  .door:last-of-type { border-bottom: 1px dashed var(--line-soft); }
+  .door-row { display: flex; align-items: center; gap: 14px; width: 100%; background: none; border: 0; padding: 18px 4px;
+              cursor: pointer; text-align: left; color: var(--ink); font-family: var(--serif); text-decoration: none; transition: padding-left .22s ease; }
+  .door-row:hover { padding-left: 12px; }
+  .door-dot { width: 11px; height: 11px; border-radius: 50%; flex: 0 0 auto; border: 1px solid rgba(74,65,54,.25); }
+  .glyph { flex: 0 0 auto; width: 24px; height: 24px; color: var(--ink-faint); display: flex; }
+  .glyph svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+  .door-row:hover .glyph { color: var(--blush); }
+  .door-name { flex: 0 0 auto; font-style: italic; font-size: 21px; font-weight: 300; }
+  .door-prev { flex: 1; text-align: right; font-style: italic; font-size: 13px; color: var(--ink-faint); }
+  .door-arrow { font-family: var(--mono); font-size: 13px; color: var(--ink-faint); transition: transform .2s ease; }
+  .door.open .door-arrow { transform: rotate(90deg); }
+  .door-panel { display: none; padding: 2px 4px 26px 40px; animation: rise .32s ease both; }
+  .door.open .door-panel { display: block; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+
+  /* today */
+  .stats { display: flex; gap: 24px; margin-bottom: 16px; }
+  .stat .n { font-size: 28px; font-style: italic; color: var(--ink); line-height: 1; }
+  .stat .k { font-family: var(--mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin-top: 6px; }
+  .tier { font-family: var(--mono); font-size: 9px; letter-spacing: .08em; color: #8a6a3a; background: color-mix(in srgb, var(--honey) 45%, var(--paper-2)); border-radius: 999px; padding: 3px 10px; }
+  .receipts { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .receipts li { display: flex; gap: 10px; font-style: italic; font-size: 15px; color: var(--ink-soft); line-height: 1.5; }
+  .receipts li::before { content: "✦"; color: var(--blush); flex: 0 0 auto; font-style: normal; }
+
+  /* someday */
+  .sd-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .sd-top .lbl { font-family: var(--mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+  .sd-search { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--ink); background: var(--paper-2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 11px; width: 150px; }
+  .sd-area { border-bottom: 1px dashed var(--line-soft); }
+  .sd-area-title { font-style: italic; font-size: 16px; color: var(--ink); padding: 9px 0; cursor: pointer; user-select: none; display: flex; align-items: baseline; gap: 9px; }
+  .sd-area-title:hover { color: var(--blush); }
+  .sd-area-title .cv { color: var(--ink-faint); font-size: 9px; transition: transform .15s ease; }
+  .sd-area.open .sd-area-title .cv { transform: rotate(90deg); }
+  .sd-area-title .ct { color: var(--ink-faint); font-family: var(--mono); font-size: 10px; margin-left: auto; }
+  .sd-sections { display: none; padding-bottom: 12px; }
+  .sd-area.open .sd-sections { display: block; }
+  .sd-area.trophy .sd-area-title, .sd-area.trophy .cv { color: var(--sage); }
+  .sd-cols { columns: 2; column-gap: 28px; }
+  .sd-group { break-inside: avoid; margin-bottom: 13px; }
+  .sd-head { font-family: var(--mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 7px; }
+  .sd-head .ct { margin-left: 6px; text-transform: none; }
+  .sd-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .sd-item { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-style: italic; font-size: 14px; color: var(--ink-soft); line-height: 1.4; }
+  .sd-item .box { color: var(--ink-faint); flex: 0 0 auto; font-size: 12px; font-style: normal; }
+  .sd-item:hover .t { color: var(--ink); }
+  .sd-item.done .t { text-decoration: line-through; color: var(--ink-faint); }
+  .sd-item.done .box { color: var(--sage); }
+  .sd-item mark { background: var(--blush-soft); color: var(--ink); border-radius: 3px; padding: 0 1px; }
+
+  /* breathe */
+  .breath-wrap { display: flex; align-items: center; gap: 20px; padding-top: 4px; }
+  .orb { width: 66px; height: 66px; border-radius: 50%; flex: 0 0 auto;
+         background: radial-gradient(circle at 35% 30%, var(--paper-2), var(--blush-soft)); border: 1.4px solid var(--line); transition: transform 4s ease-in-out; cursor: pointer; }
+  .orb.in { transform: scale(1.7); border-color: var(--blush); }
+  .breath-text { font-style: italic; font-size: 17px; color: var(--ink); }
+  .breath-text small { display: block; font-family: var(--mono); font-size: 9px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); margin-top: 6px; }
+
+  .signoff { margin-top: 38px; text-align: center; }
+  .signoff svg { width: 56px; height: 20px; stroke: var(--blush); fill: none; stroke-width: 1.2; stroke-linecap: round; margin-bottom: 12px; }
+  .signoff p { font-style: italic; font-size: 14px; color: var(--ink-faint); line-height: 1.7; }
+  .stamp { font-family: var(--mono); font-size: 9px; color: var(--ink-faint); opacity: .55; text-align: center; margin-top: 12px; }
+
+  /* ── interactive bits ── */
+  .avatar { cursor: pointer; }
+  .decor.wiggle { animation: wiggle .6s ease; }
+  @keyframes wiggle { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-5deg)} 50%{transform:rotate(4deg)} 75%{transform:rotate(-2deg)} }
+  @keyframes hop { 0%{transform:translateY(0)} 30%{transform:translateY(-16px)} 55%{transform:translateY(0)} 78%{transform:translateY(-6px)} 100%{transform:translateY(0)} }
+  .flyby { position: absolute; top: 26%; left: -30%; width: 40px; z-index: 3; pointer-events: none; animation: across 2.5s ease-in forwards; }
+  .flyby svg { width: 40px; fill: none; stroke: var(--scene-ink, var(--ink)); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  @keyframes across { to { left: 120%; top: 12%; } }
+  .lamp { position: fixed; right: 22px; bottom: 18px; z-index: 6; background: none; border: 0; cursor: pointer; padding: 6px; line-height: 0; }
+  .lamp svg { width: 44px; height: 52px; fill: none; stroke: var(--ink-faint); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; transition: stroke .25s ease; }
+  .lamp:hover svg { stroke: var(--ink); }
+  .lamp.on .bulb { fill: var(--honey); stroke: none; opacity: .65; }
+  .lamp.on svg { stroke: var(--ink); }
+  body.cozy { transition: background .4s ease; }
+  body.cozy::after { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(circle at 88% 86%, rgba(231,190,118,.32), transparent 56%),
+                radial-gradient(circle at 50% 0%, rgba(231,190,118,.10), transparent 50%); }
+
+  @media (max-width: 620px) { .wrap { padding-left: 24px; } .spine { display: none; } .sd-cols { columns: 1; } }
+</style>
+</head>
+<body>
+
+<div class="lights"></div>
+
+<!-- a framed picture on the wall -->
+<svg class="decor pic" viewBox="0 0 92 84" style="left:12px; top:58px; width:92px; height:84px;">
+  <rect x="0" y="0" width="92" height="84" fill="transparent" stroke="none"/>
+  <rect x="8" y="8" width="76" height="60" rx="3"/>
+  <path d="M14 60 L34 38 L48 54 L60 42 L78 60 Z" stroke="#9CAE86"/>
+  <circle cx="64" cy="26" r="6" fill="#E7BE76" stroke="none"/>
+  <path d="M34 76 h24"/>
+</svg>
+
+<!-- cozy corner plants (line + soft sage) -->
+<svg class="decor left" viewBox="0 0 120 150">
+  <rect x="0" y="0" width="120" height="150" fill="transparent" stroke="none"/>
+  <path class="pot" d="M34 110 h52 l-7 36 h-38 z"/>
+  <path d="M60 110 C60 80 44 74 38 56 M60 110 C60 84 78 78 86 60 M60 110 C58 86 60 64 60 44 M60 60 C50 58 44 50 44 42 M60 66 C72 62 78 54 78 46"/>
+  <path d="M38 56c-6-2-8-8-6-12 5 1 8 5 6 12zM86 60c6-3 7-9 4-12-4 2-6 6-4 12zM60 44c-3-6-1-12 3-13 2 5 1 10-3 13z"/>
+</svg>
+<svg class="decor right" viewBox="0 0 96 140">
+  <rect x="0" y="0" width="96" height="140" fill="transparent" stroke="none"/>
+  <path d="M48 4 v26"/><path class="pot" d="M30 30 h36 l-4 20 h-28 z"/>
+  <path d="M48 50 C48 78 34 86 30 104 M48 50 C48 80 62 88 66 106 M48 50 C46 82 48 100 48 118"/>
+  <path d="M30 104c-6 0-10 6-9 11 6-1 10-5 9-11zM66 106c6 1 10 7 8 12-5-2-9-6-8-12zM48 118c-4 4-4 11 0 14 4-3 4-10 0-14z"/>
+</svg>
+
+<!-- shelf with books + a steaming mug of tea -->
+<svg class="decor shelf" viewBox="0 0 124 120">
+  <rect x="0" y="0" width="124" height="120" fill="transparent" stroke="none"/>
+  <path d="M6 66 h112 M16 66 l6 11 M108 66 l-6 11"/>
+  <rect x="18" y="42" width="9" height="24" fill="#C9D6B8" stroke="#6E6354" stroke-width="1"/>
+  <rect x="28" y="36" width="9" height="30" fill="#EBD0C7" stroke="#6E6354" stroke-width="1"/>
+  <rect x="38" y="46" width="9" height="20" fill="#AEC8CC" stroke="#6E6354" stroke-width="1"/>
+  <path d="M50 66 v-18 l11 -4 v22 z" fill="#E7BE76" stroke="#6E6354" stroke-width="1"/>
+  <rect x="82" y="48" width="22" height="18" rx="3" fill="#F8F1E4" stroke="#4A4136"/>
+  <path d="M104 52 q8 0 8 6 t-8 6" fill="none" stroke="#4A4136"/>
+  <path class="steam steam1" d="M88 44 q4 -4 0 -9" stroke="#A4977F"/>
+  <path class="steam steam2" d="M96 44 q4 -4 0 -9" stroke="#A4977F"/>
+</svg>
+
+<!-- a sleeping cat -->
+<svg class="decor cat" viewBox="0 0 96 64">
+  <rect x="0" y="0" width="96" height="64" fill="transparent" stroke="none"/>
+  <path d="M20 52 q-10 -26 18 -32 q30 -6 46 8 q12 12 2 22 q-34 8 -66 2 z" fill="#EADFC9"/>
+  <path d="M66 22 l5 -9 4 8 M76 22 l8 -6 0 9" fill="#EADFC9"/>
+  <path d="M22 52 q-9 1 -3 7"/>
+  <path d="M40 40 q3 2 6 0 M52 40 q3 2 6 0"/>
+  <path d="M48 46 q2 2 4 0"/>
+</svg>
+
+<div class="spine"></div>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="window">
+      <div class="win-bar-v"></div><div class="win-bar-h"></div>
+      <div class="weather" id="weather"></div>
+      <div class="scene" id="scene"></div>
+    </div>
+    <div class="eyebrow">the room</div>
+    <h1 class="greeting" id="greeting">good evening, tiffany</h1>
+    <div class="say">
+      <div class="seat">
+        <svg class="cushion" viewBox="0 0 92 34"><path d="M8 25 q-5 -17 15 -17 h46 q20 0 15 17 q3 7 -15 7 h-46 q-18 0 -15 -7z" fill="#EBD0C7" stroke="#D69E8E" stroke-width="1.3"/><path d="M14 15 q32 -6 64 0" stroke="#D69E8E" fill="none" stroke-width="1"/></svg>
+      <div class="avatar" id="avatar">
+        <svg width="78" height="84" viewBox="0 0 78 84" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#4A4136" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="39" cy="80" rx="18" ry="3" fill="rgba(74,65,54,.10)" stroke="none"/>
+          <path d="M26 24 C20 12 24 6 28 8 C30 10 30 18 30 22" fill="#C9D6B8"/>
+          <path d="M52 24 C58 12 54 6 50 8 C48 10 48 18 48 22" fill="#C9D6B8"/>
+          <path d="M14 46 C14 28 26 20 39 20 C52 20 64 28 64 46 C64 64 53 72 39 72 C25 72 14 64 14 46 Z" fill="#C9D6B8"/>
+          <g class="eyes" id="eyes">
+            <circle cx="30" cy="46" r="2.4" fill="#4A4136" stroke="none"/>
+            <circle cx="48" cy="46" r="2.4" fill="#4A4136" stroke="none"/>
+          </g>
+          <circle cx="23" cy="53" r="4" fill="#EBD0C7" stroke="none"/>
+          <circle cx="55" cy="53" r="4" fill="#EBD0C7" stroke="none"/>
+          <path d="M35 54 c4 4 8 0 8 0"/>
+          <path d="M30 72 c0 6 -1 9 -3 10 M48 72 c0 6 1 9 3 10"/>
+        </svg>
+        <div class="bud-name" id="bud-name">name me?</div>
+      </div>
+      </div>
+      <div class="dialog">
+        <div class="moment-q">what's the moment?</div>
+        <div class="chips" id="mood-chips"></div>
+        <div class="whisper" id="whisper">pick a vibe — i'll find you something ♡</div>
+        <span class="cont">▾</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="journal" id="journal"></p>
+
+  <div class="doors" id="doors">
+    <div class="door" id="door-today">
+      <button class="door-row" data-toggle="door-today">
+        <span class="door-dot" style="background:var(--blush)"></span>
+        <span class="glyph"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg></span>
+        <span class="door-name">today</span><span class="door-prev" id="prev-today"></span><span class="door-arrow">›</span>
+      </button>
+      <div class="door-panel"><div class="stats" id="stats"></div><ul class="receipts" id="receipts"></ul></div>
+    </div>
+
+    <div class="door" id="door-someday">
+      <button class="door-row" data-toggle="door-someday">
+        <span class="door-dot" style="background:var(--dusk)"></span>
+        <span class="glyph"><svg viewBox="0 0 24 24"><path d="M12 3l2.2 5.6 6 .4-4.6 3.9 1.5 5.8L12 16.9 6.9 18.7l1.5-5.8L3.8 9l6-.4z"/></svg></span>
+        <span class="door-name">someday</span><span class="door-prev" id="prev-someday"></span><span class="door-arrow">›</span>
+      </button>
+      <div class="door-panel">
+        <div class="sd-top"><span class="lbl">things i want to do to feel human</span>
+          <input id="sd-search" class="sd-search" type="text" placeholder="find a thing…" autocomplete="off"></div>
+        <div id="someday-groups"></div>
+      </div>
+    </div>
+
+    <div class="door"><a class="door-row" href="arabic/index.html">
+      <span class="door-dot" style="background:var(--sage)"></span>
+      <span class="glyph"><svg viewBox="0 0 24 24"><path d="M7 4c0 8-2 13 2 16M14 8c-2 4 0 8 4 8M18 5v.01"/></svg></span>
+      <span class="door-name">arabic studio</span><span class="door-prev" id="prev-arabic">learn to read &amp; write the script</span><span class="door-arrow">›</span>
+    </a></div>
+
+    <div class="door"><a class="door-row" href="learning/index.html">
+      <span class="door-dot" style="background:var(--skyblue)"></span>
+      <span class="glyph"><svg viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5zM12 6v13"/></svg></span>
+      <span class="door-name">the library</span><span class="door-prev">learn something just for fun</span><span class="door-arrow">›</span>
+    </a></div>
+
+    <div class="door"><a class="door-row" href="longview/index.html">
+      <span class="door-dot" style="background:var(--blush)"></span>
+      <span class="glyph"><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 3 6-7M21 8V4h-4"/><path d="M3 21h18" opacity=".5"/></svg></span>
+      <span class="door-name">the long view</span><span class="door-prev" id="prev-longview">look how far you've come</span><span class="door-arrow">›</span>
+    </a></div>
+
+    <div class="door"><a class="door-row" href="check-in/index.html">
+      <span class="door-dot" style="background:var(--dusk)"></span>
+      <span class="glyph"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-7-9.5A3.5 3.5 0 0 1 12 8a3.5 3.5 0 0 1 7 2.5C19 15.5 12 20 12 20z"/></svg></span>
+      <span class="door-name">the check-in</span><span class="door-prev">notice how your body feels</span><span class="door-arrow">›</span>
+    </a></div>
+
+    <div class="door" id="door-breathe">
+      <button class="door-row" data-toggle="door-breathe">
+        <span class="door-dot" style="background:var(--honey)"></span>
+        <span class="glyph"><svg viewBox="0 0 24 24"><path d="M4 14c2 0 2-3 4-3s2 3 4 3 2-3 4-3 2 3 4 3"/><path d="M4 9c2 0 2-3 4-3s2 3 4 3 2-3 4-3 2 3 4 3" opacity=".5"/></svg></span>
+        <span class="door-name">a quiet minute</span><span class="door-prev">for your nervous system</span><span class="door-arrow">›</span>
+      </button>
+      <div class="door-panel"><div class="breath-wrap"><div class="orb" id="orb"></div>
+        <div class="breath-text" id="breath-text">tap the circle<small>box breathing · 4 in · 4 hold · 4 out</small></div></div></div>
+    </div>
+
+    <div class="door" id="door-music">
+      <button class="door-row" data-toggle="door-music">
+        <span class="door-dot" style="background:var(--dusk)"></span>
+        <span class="glyph"><svg viewBox="0 0 24 24"><circle cx="7" cy="18" r="3"/><circle cx="18" cy="16" r="3"/><path d="M10 18V6l11-2v12"/></svg></span>
+        <span class="door-name">music</span><span class="door-prev" id="prev-music">set the mood</span><span class="door-arrow">›</span>
+      </button>
+      <div class="door-panel">
+        <div class="chips" id="music-moods" style="margin-bottom:12px;"></div>
+        <iframe id="spotify" class="spotify-frame" src="" width="100%" height="352" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        <div class="music-note">demo playlist for now — paste me your Spotify playlist links and i'll wire each mood to your own.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- rug on the floor, at the bottom of the room -->
+  <div class="rug"><svg viewBox="0 0 460 96">
+    <ellipse cx="230" cy="48" rx="224" ry="40"/>
+    <ellipse cx="230" cy="48" rx="194" ry="31"/>
+    <ellipse cx="230" cy="48" rx="160" ry="23" stroke-dasharray="3 7"/>
+  </svg></div>
+
+  <div class="signoff">
+    <svg viewBox="0 0 56 20"><path d="M2 13c6-9 13-9 16 0s11 9 16-2 6-5 10 2"/></svg>
+    <p>this room is yours. it changes as your days do ♡<br>need anything? just call Claude.</p>
+  </div>
+  <p class="stamp" id="stamp"></p>
+</div>
+
+<button class="lamp" id="lamp" aria-label="cozy light" title="cozy light">
+  <svg viewBox="0 0 44 52">
+    <path class="bulb" d="M11 19 L22 4 L33 19 Z"/>
+    <path d="M11 19 L33 19"/><line x1="22" y1="19" x2="22" y2="42"/>
+    <path d="M13 48 q9 -8 18 0 z"/>
+  </svg>
+</button>
+
+<script src="room-data.js"></script>
+<script>
+(function () {
+  var R = window.ROOM || { empty: true };
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+
+  var h = new Date().getHours(), night = (h < 6 || h >= 20);
+  var part = h < 5 ? "still up" : h < 12 ? "good morning" : h < 17 ? "good afternoon" : h < 21 ? "good evening" : "winding down";
+  document.getElementById("greeting").textContent = part + ", tiffany";
+
+  // window sky tint + self-drawing one-line scene
+  var rs = document.documentElement.style, scene = document.getElementById("scene");
+  if (night) {
+    rs.setProperty("--win-sky", "#46436A"); scene.style.setProperty("--scene-ink", "#F2EADB");
+    scene.innerHTML = '<svg class="draw" viewBox="0 0 300 120">' +
+      '<path class="d" pathLength="1" d="M132 28a32 32 0 1 0 22 56 40 40 0 0 1-22-56z"/>' +
+      '<path class="d2" pathLength="1" d="M196 40l2 7 7 2-7 2-2 7-2-7-7-2 7-2z"/>' +
+      '<path class="d3" pathLength="1" d="M232 70l1.4 5 5 1.4-5 1.4-1.4 5-1.4-5-5-1.4 5-1.4z"/>' +
+      '<path class="d3" pathLength="1" d="M96 54l1 4 4 1-4 1-1 4-1-4-4-1 4-1z"/></svg>';
+  } else {
+    var tint = (h < 11) ? "#EAD0DA" : (h < 17) ? "#CBDDDA" : "#D7C4DE"; // dawn pink · day blue-green · dusk mauve
+    rs.setProperty("--win-sky", tint); scene.style.setProperty("--scene-ink", "#4A4136");
+    scene.innerHTML = '<svg class="draw" viewBox="0 0 300 120">' +
+      '<circle class="sun-fill" pathLength="1" cx="150" cy="58" r="24"/>' +
+      '<circle class="d" pathLength="1" cx="150" cy="58" r="24"/>' +
+      '<path class="d2" pathLength="1" d="M150 18v13M150 85v13M98 58h13M189 58h13M114 22l9 9M177 84l9 9M186 22l-9 9M123 84l-9 9"/>' +
+      '<polyline class="d3" pathLength="1" points="44,100 58,92 72,100"/>' +
+      '<polyline class="d3" pathLength="1" points="228,96 242,88 256,96"/></svg>';
+  }
+
+  if (R.empty) { document.getElementById("journal").textContent = "no session yet — run build_room.py"; return; }
+
+  var DAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  var t0 = new Date(), todayKey = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate());
+  var realDay = DAYS[t0.getDay()];
+  function relDay(s) {
+    if (!s) return "";
+    var p = s.split("-"), d = new Date(+p[0], +p[1] - 1, +p[2]);
+    var diff = Math.round((todayKey - d) / 86400000);
+    return diff <= 0 ? "today" : diff === 1 ? "yesterday" : diff < 7 ? DAYS[d.getDay()] : diff + " days ago";
+  }
+  var rel = relDay(R.date), fresh = (rel === "today");
+  var responsive = R.hrv >= 100 ? "your body's loud and responsive" : R.hrv ? "your body's settling" : "";
+  document.getElementById("journal").innerHTML = "it's " + realDay + ". " +
+    (fresh
+      ? (R.focus ? "you trained <b>" + esc(R.focus.toLowerCase()) + "</b>. " : "") + (R.hrv ? "hrv <b>" + R.hrv + "</b> — " + responsive + "." : "")
+      : "no check-in yet today — " + (R.focus ? "last you trained <b>" + esc(R.focus.toLowerCase()) + "</b> " + rel + "." : "want your morning snapshot?"));
+  // the "today" door reflects the last session honestly
+  var todayDoor = document.querySelector("#door-today .door-name");
+  if (!fresh && todayDoor) todayDoor.textContent = "last session";
+  document.getElementById("prev-today").textContent =
+    (fresh ? "" : rel + " · ") + (R.tier ? R.tier.toLowerCase() + " readiness" : "");
+  var stats = [["hrv", R.hrv], ["rhr", R.rhr], ["sleep", R.sleep != null ? R.sleep + "h" : null]];
+  document.getElementById("stats").innerHTML = stats.filter(function (s) { return s[1] != null; })
+    .map(function (s) { return '<div class="stat"><div class="n">' + s[1] + '</div><div class="k">' + s[0] + '</div></div>'; }).join("") +
+    (R.tier ? '<div class="stat" style="align-self:center"><span class="tier">' + R.tier + '</span></div>' : "");
+  document.getElementById("receipts").innerHTML = (R.receipts || []).map(function (r) { return "<li>" + esc(r) + "</li>"; }).join("") || "<li>quiet day. that counts too.</li>";
+
+  // someday
+  var areas = R.someday_areas || [], LS_DONE = "room_someday_done_v1", LS_OPEN = "room_someday_open_v1";
+  function load(k) { try { return JSON.parse(localStorage.getItem(k)) || []; } catch (e) { return []; } }
+  function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  var done = load(LS_DONE), openAreas = load(LS_OPEN);
+  function hi(t, f) { if (!f) return esc(t); var i = t.toLowerCase().indexOf(f); if (i < 0) return esc(t);
+    return esc(t.slice(0, i)) + "<mark>" + esc(t.slice(i, i + f.length)) + "</mark>" + esc(t.slice(i + f.length)); }
+  var allWishes = [];
+  areas.forEach(function (a) { (a.sections || []).forEach(function (s) { (s.items || []).forEach(function (it) { allWishes.push(it); }); }); });
+  allWishes = allWishes.filter(function (it) { return !/tattoo/i.test(it); });
+  function sdPrev() { document.getElementById("prev-someday").textContent = allWishes.length + " wishes · " + done.length + " done"; }
+  sdPrev();
+  function renderSomeday(filter) {
+    filter = (filter || "").trim().toLowerCase();
+    var html = "", doneItems = [];
+    areas.forEach(function (area) {
+      var secHtml = "", count = 0, matched = 0;
+      (area.sections || []).forEach(function (sec) {
+        var lis = "";
+        (sec.items || []).forEach(function (it) {
+          if (done.indexOf(it) >= 0) { doneItems.push(it); return; }
+          count++; var hay = (it + " " + (sec.title || "") + " " + area.area).toLowerCase();
+          if (filter && hay.indexOf(filter) < 0) return; matched++;
+          lis += '<li class="sd-item" data-item="' + esc(it) + '"><span class="box">○</span><span class="t">' + hi(it, filter) + '</span></li>';
+        });
+        if (lis) secHtml += '<div class="sd-group">' + (sec.title ? '<div class="sd-head">' + esc(sec.title) + (sec.note ? ' <span class="ct">' + esc(sec.note) + '</span>' : '') + '</div>' : '') + '<ul class="sd-list">' + lis + '</ul></div>';
+      });
+      if (!count || (filter && !matched)) return;
+      var open = filter ? true : openAreas.indexOf(area.area) >= 0;
+      html += '<div class="sd-area' + (open ? ' open' : '') + '" data-area="' + esc(area.area) + '"><div class="sd-area-title"><span class="cv">▸</span> ' + esc(area.area) + ' <span class="ct">' + (filter ? matched : count) + '</span></div><div class="sd-sections"><div class="sd-cols">' + secHtml + '</div></div></div>';
+    });
+    if (doneItems.length && !filter) html += '<div class="sd-area trophy open"><div class="sd-area-title"><span class="cv">▸</span> ✦ you actually did it <span class="ct">' + doneItems.length + '</span></div><div class="sd-sections"><ul class="sd-list">' + doneItems.map(function (it) { return '<li class="sd-item done" data-item="' + esc(it) + '"><span class="box">✓</span><span class="t">' + esc(it) + '</span></li>'; }).join("") + '</ul></div></div>';
+    document.getElementById("someday-groups").innerHTML = html;
+    [].forEach.call(document.querySelectorAll(".sd-area-title"), function (el) {
+      el.onclick = function () { var a = el.parentNode, n = a.getAttribute("data-area"); a.classList.toggle("open");
+        if (n) { var i = openAreas.indexOf(n); a.classList.contains("open") ? (i < 0 && openAreas.push(n)) : (i >= 0 && openAreas.splice(i, 1)); save(LS_OPEN, openAreas); } };
+    });
+    [].forEach.call(document.querySelectorAll(".sd-item"), function (el) {
+      el.onclick = function (e) { e.stopPropagation(); var it = el.getAttribute("data-item"), i = done.indexOf(it);
+        if (i >= 0) { done.splice(i, 1); } else { done.push(it); celebrate(el); }
+        save(LS_DONE, done); sdPrev(); renderSomeday(document.getElementById("sd-search").value); };
+    });
+  }
+  document.getElementById("sd-search").addEventListener("input", function (e) { renderSomeday(e.target.value); });
+  renderSomeday("");
+
+  try { var box = JSON.parse(localStorage.getItem("arabic_box_v1")) || {};
+    var known = Object.keys(box).filter(function (k) { return box[k] >= 4; }).length;
+    document.getElementById("prev-arabic").textContent = known ? known + " / 28 letters known" : "learn to read & write the script";
+  } catch (e) {}
+
+  var MOODS = [
+    { label: "restless",    opener: "ooh — you wanted to",   kw: ["sip and paint", "spyscape", "escape room", "six flags", "dance studio", "gaming cafe"] },
+    { label: "cozy",        opener: "stay in soft — maybe",  kw: ["morgan library", "cozy cafe", "how to expect", "romance", "mystery", "lexington candy", "embroider", "plushie"] },
+    { label: "adventurous", opener: "the big one's waiting:", kw: ["london", "australia", "new orleans", "treehouse", "denver", "edinburgh", "paris"] },
+    { label: "social",      opener: "gather people —",       kw: ["book club", "gaming cafe", "sip and paint", "comedy", "annie's ibiza", "makerspace", "ceramics"] },
+    { label: "with chris",  opener: "a chris day —",         kw: ["pottery", "cooking class", "painting class", "comedy cellar", "stoned pizza", "brookfield", "puppy yoga", "plushie", "drawing room", "morgan library"] },
+    { label: "recharge",    opener: "be gentle with you —",  kw: ["massage", "lymphatic", "qcny spa", "embroider", "cozy cafe"] },
+    { label: "creative",    opener: "make something —",      kw: ["candle", "wick & pour", "ceramics", "embroider", "drawing room", "pottery", "painting"] },
+    { label: "wanna learn", opener: "feed the curiosity —",  kw: ["arabic", "neuroscience", "book club", "drawing room"] }
+  ];
+  var chipBox = document.getElementById("mood-chips"), whisper = document.getElementById("whisper"), avatar = document.getElementById("avatar");
+  function surface(mood) {
+    var hits = allWishes.filter(function (it) { var t = it.toLowerCase(); return mood.kw.some(function (k) { return t.indexOf(k) >= 0; }); });
+    if (mood.label === "wanna learn") hits.push("come learn to read & write arabic 🐘 →ARABIC");
+    whisper.classList.remove("show");
+    if (avatar) { avatar.style.animation = "none"; avatar.offsetHeight; avatar.style.animation = "bob 3.2s ease-in-out infinite"; }
+    setTimeout(function () {
+      if (!hits.length) { whisper.innerHTML = "hmm, nothing for that yet — add it to your list?"; whisper.classList.add("show"); return; }
+      var pick = hits[Math.floor(Math.random() * hits.length)], link = pick.indexOf("→ARABIC") >= 0;
+      pick = pick.replace(" →ARABIC", "");
+      whisper.innerHTML = mood.opener + " " + (link ? '<a href="arabic/index.html">' + esc(pick) + '</a>' : "<strong>" + esc(pick) + "</strong>") + (hits.length > 1 ? ' <span class="reroll">↻ another</span>' : "");
+      whisper.classList.add("show");
+      var rr = whisper.querySelector(".reroll"); if (rr) rr.onclick = function () { surface(mood); };
+    }, 130);
+  }
+  MOODS.forEach(function (m) { var c = document.createElement("div"); c.className = "chip"; c.textContent = m.label;
+    c.onclick = function () { [].forEach.call(chipBox.children, function (x) { x.classList.remove("active"); }); c.classList.add("active"); surface(m); };
+    chipBox.appendChild(c); });
+
+  [].forEach.call(document.querySelectorAll("[data-toggle]"), function (btn) {
+    btn.onclick = function () { document.getElementById(btn.getAttribute("data-toggle")).classList.toggle("open"); };
+  });
+
+  var orb = document.getElementById("orb"), bt = document.getElementById("breath-text"), running = false;
+  var phases = [["breathe in", "in"], ["hold", "in"], ["breathe out", ""], ["hold", ""]];
+  orb.onclick = function () {
+    if (running) return; running = true; var i = 0, cycles = 0;
+    (function step() {
+      var p = phases[i % 4]; bt.innerHTML = p[0] + "<small>box breathing · round " + (cycles + 1) + " of 4</small>";
+      orb.classList.toggle("in", p[1] === "in"); i++; if (i % 4 === 0) cycles++;
+      if (cycles >= 4) { setTimeout(function () { running = false; orb.classList.remove("in"); bt.innerHTML = "nice ♡<small>box breathing · tap to go again</small>"; }, 4000); return; }
+      setTimeout(step, 4000);
+    })();
+  };
+
+  // ── more interactives ──
+  // pet the buddy → hops, hearts, talks; eyes follow the cursor + blink + sleepy at night
+  var COZY = ["hi tiff ♡", "you're doing better than you think.", "proud of you, fr.", "sip some water? 🤍", "you made this whole room. iconic.", "tap a mood — i'll find you something."];
+  var NIGHTLINES = ["it's late — be soft with yourself.", "stars are out. so are you. ✦", "tea + bed soon? 🤍"];
+  var eyes = document.getElementById("eyes"), petCount = 0;
+  function heart(x, y, ch) { var el = document.createElement("div"); el.className = "heart"; el.textContent = ch;
+    el.style.left = x + "px"; el.style.top = y + "px"; document.body.appendChild(el); setTimeout(function () { el.remove(); }, 1100); }
+  if (avatar) {
+    avatar.title = "pet me";
+    if (night && eyes) eyes.style.transform = "scaleY(.6)";
+    document.addEventListener("mousemove", function (e) {
+      if (!eyes) return; var r = avatar.getBoundingClientRect();
+      var dx = Math.max(-2.4, Math.min(2.4, (e.clientX - (r.left + r.width / 2)) / 38));
+      var dy = Math.max(-1.6, Math.min(1.8, (e.clientY - (r.top + r.height * 0.45)) / 38));
+      eyes.style.transform = "translate(" + dx + "px," + dy + "px)" + (night ? " scaleY(.6)" : "");
+    });
+    setInterval(function () { if (eyes) { eyes.classList.add("blink"); setTimeout(function () { eyes.classList.remove("blink"); }, 180); } }, 4500);
+    avatar.addEventListener("click", function () {
+      petCount++;
+      avatar.style.animation = "none"; avatar.offsetHeight; avatar.style.animation = "hop .55s ease";
+      setTimeout(function () { avatar.style.animation = "bob 3.2s ease-in-out infinite"; }, 560);
+      var r = avatar.getBoundingClientRect();
+      for (var k = 0; k < 3; k++) heart(r.left + r.width / 2 - 8 + (Math.random() * 26 - 13), r.top + 4 + Math.random() * 12, night ? "✦" : "♡");
+      var line;
+      if (petCount === 5) line = "ok you really like me huh 🥹";
+      else if (petCount === 10) line = "best friends now. it's official 🤍";
+      else if (petCount === 20) line = "dizzy from all the love 😵‍💫";
+      else { var pool = night ? COZY.concat(NIGHTLINES) : COZY; line = pool[Math.floor(Math.random() * pool.length)]; }
+      [].forEach.call(chipBox.children, function (x) { x.classList.remove("active"); });
+      whisper.classList.remove("show");
+      setTimeout(function () { whisper.innerHTML = line; whisper.classList.add("show"); }, 120);
+    });
+  }
+  // string lights across the top (glow when the lamp is on)
+  (function () {
+    var box = document.querySelector(".lights"); if (!box) return;
+    function draw() {
+      var w = Math.max(320, window.innerWidth), n = Math.ceil(w / 86), seg = w / n, path = "M0 4", bulbs = "";
+      for (var i = 0; i < n; i++) { var xm = (i * seg + seg / 2).toFixed(0), x1 = ((i + 1) * seg).toFixed(0);
+        path += " Q" + xm + " 26 " + x1 + " 4";
+        bulbs += '<line class="wire" x1="' + xm + '" y1="22" x2="' + xm + '" y2="16"/><circle class="bulb" cx="' + xm + '" cy="27" r="4.5"/>'; }
+      box.innerHTML = '<svg width="' + w + '" height="36" viewBox="0 0 ' + w + ' 36"><path class="wire" d="' + path + '"/>' + bulbs + '</svg>';
+    }
+    draw(); window.addEventListener("resize", draw);
+  })();
+
+  // ── weather drifting in the window (live, defaults to NYC) ──
+  var weatherBox = document.getElementById("weather");
+  var GLYPHS = {
+    snow: '<svg viewBox="0 0 10 10"><path d="M5 1v8M1 5h8M2.5 2.5l5 5M7.5 2.5l-5 5" stroke="#d4dbe0" stroke-width="1" fill="none" stroke-linecap="round"/></svg>',
+    petal: '<svg viewBox="0 0 12 12"><path d="M6 1 C9 4 9 8 6 11 C3 8 3 4 6 1Z" fill="#EBD0C7" stroke="#D69E8E" stroke-width=".6"/></svg>',
+    leaf: '<svg viewBox="0 0 12 12"><path d="M2 10 C2 4 6 1 10 2 C10 7 6 11 2 10Z M3 9 L9 3" fill="#E7BE76" stroke="#b98a4e" stroke-width=".6"/></svg>',
+    leafGreen: '<svg viewBox="0 0 12 12"><path d="M2 10 C2 4 6 1 10 2 C10 7 6 11 2 10Z M3 9 L9 3" fill="#C9D6B8" stroke="#7f9168" stroke-width=".6"/></svg>',
+    rain: '<svg viewBox="0 0 4 14"><line x1="2" y1="0" x2="2" y2="12" stroke="#AEC8CC" stroke-width="1.6" stroke-linecap="round"/></svg>'
+  };
+  function seasonType() { var m = new Date().getMonth(); return (m >= 2 && m <= 4) ? "petal" : (m >= 5 && m <= 7) ? "leafGreen" : (m >= 8 && m <= 10) ? "leaf" : "snow"; }
+  function codeToType(c) {
+    if ((c >= 71 && c <= 77) || c === 85 || c === 86) return "snow";
+    if ((c >= 51 && c <= 67) || (c >= 80 && c <= 82) || c >= 95) return "rain";
+    return seasonType();
+  }
+  function spawnWeather(type) {
+    if (!weatherBox) return; weatherBox.innerHTML = ""; var g = GLYPHS[type] || GLYPHS.petal;
+    var n = type === "rain" ? 22 : type === "snow" ? 18 : 12;
+    for (var i = 0; i < n; i++) {
+      var f = document.createElement("span"); f.className = "flake" + (type === "rain" ? " rain" : ""); f.innerHTML = g;
+      var dur = type === "rain" ? (0.7 + Math.random() * 0.6) : (5 + Math.random() * 5);
+      f.style.left = (Math.random() * 100) + "%";
+      f.style.setProperty("--sx", (Math.random() * 40 - 20) + "px");
+      f.style.setProperty("--rot", (Math.random() * 260 - 130) + "deg");
+      if (type !== "rain") f.style.width = (8 + Math.random() * 6) + "px";
+      f.style.animationDuration = dur + "s"; f.style.animationDelay = (-Math.random() * dur) + "s";
+      weatherBox.appendChild(f);
+    }
+  }
+  (function () {
+    var url = "https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.01&current=weather_code&timezone=auto";
+    fetch(url).then(function (r) { return r.json(); })
+      .then(function (d) { var c = d && d.current && d.current.weather_code; spawnWeather(typeof c === "number" ? codeToType(c) : seasonType()); })
+      .catch(function () { spawnWeather(seasonType()); });
+  })();
+
+  // ── music: mood → a Spotify playlist (swap the ids for your own) ──
+  var MUSIC = {
+    daydream: "1D4OCJ55bUhVvkI8XrF6Wd",         // shut up, i'm daydreaming
+    nostalgic: "2iXntdutgt7xFIkY2YVbln",        // nostalgia
+    hype: "2b4LyacrDMAdNpfYBIArJR",             // goddess complex
+    "in my feels": "3tu5rPBx7iufGRDcKmNn2f",    // caught feelings
+    heartbroken: "3hGUhQV98exZaZXM2RFFjc",      // unrequited love
+    petty: "6uC0njq6tR4xlvNbmoKPD8",            // feelin' spiteful
+    "with the girls": "7GOR0zp1KLeezlcIwoo1ea", // road trip with the girlies
+    "night drive": "550bdjfTStuVrGKKjnsf8K"     // nightly car rides
+  };
+  var frame = document.getElementById("spotify"), mbox = document.getElementById("music-moods");
+  function playMood(m) { if (frame) frame.src = "https://open.spotify.com/embed/playlist/" + MUSIC[m] + "?utm_source=generator"; }
+  if (mbox) {
+    Object.keys(MUSIC).forEach(function (m, idx) {
+      var c = document.createElement("div"); c.className = "chip"; c.textContent = m;
+      c.onclick = function () { [].forEach.call(mbox.children, function (x) { x.classList.remove("active"); }); c.classList.add("active"); playMood(m); };
+      mbox.appendChild(c); if (idx === 0) c.classList.add("active");
+    });
+    playMood("daydream");
+  }
+
+  // ── celebrate when a wish gets checked off ──
+  function confetti(x, y) {
+    var colors = ["#9CAE86", "#D69E8E", "#AEC8CC", "#E7BE76", "#C7B2CE"];
+    for (var i = 0; i < 20; i++) {
+      var c = document.createElement("div"); c.className = "confetti"; c.style.background = colors[i % colors.length];
+      c.style.left = x + "px"; c.style.top = y + "px";
+      c.style.setProperty("--dx", (Math.random() * 300 - 150) + "px");
+      c.style.setProperty("--dy", (110 + Math.random() * 220) + "px");
+      c.style.setProperty("--r", (Math.random() * 540 - 270) + "deg");
+      document.body.appendChild(c);
+      (function (el) { setTimeout(function () { el.remove(); }, 1400); })(c);
+    }
+  }
+  function celebrate(el) {
+    var av = document.getElementById("avatar");
+    if (av) { av.style.animation = "none"; av.offsetHeight; av.style.animation = "hop .55s ease"; setTimeout(function () { av.style.animation = "bob 3.2s ease-in-out infinite"; }, 560); }
+    var cheers = ["yesss!! 🎉", "look at you GO", "that's a real receipt 🤍", "you DID that ✦", "onto the 'you did it' wall!"];
+    var w = document.getElementById("whisper");
+    if (w) { w.classList.remove("show"); setTimeout(function () { w.innerHTML = cheers[Math.floor(Math.random() * cheers.length)]; w.classList.add("show"); }, 120); }
+    var r = el && el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+    confetti(r ? r.left + 24 : window.innerWidth / 2, r ? r.top : window.innerHeight * 0.35);
+  }
+  // sleeping cat → purrs when booped
+  var cat = document.querySelector(".decor.cat");
+  if (cat) cat.addEventListener("click", function () { var r = cat.getBoundingClientRect(); heart(r.left + r.width / 2 - 10, r.top + 6, "mrr~"); });
+  // name your buddy (you pick it — saved in the browser)
+  var nameEl = document.getElementById("bud-name");
+  function buddyName() { try { return localStorage.getItem("room_buddy_name") || ""; } catch (e) { return ""; } }
+  function paintName() { if (nameEl) nameEl.textContent = buddyName() ? "♡ " + buddyName() : "name me?"; }
+  paintName();
+  if (nameEl) nameEl.addEventListener("click", function (e) {
+    e.stopPropagation();
+    var n = prompt("what's his name?", buddyName());
+    if (n != null) { try { localStorage.setItem("room_buddy_name", n.trim()); } catch (e) {} paintName(); }
+  });
+  // wiggle the plants
+  [].forEach.call(document.querySelectorAll(".decor"), function (p) {
+    p.style.pointerEvents = "auto"; p.style.cursor = "pointer";
+    p.addEventListener("click", function () { p.classList.remove("wiggle"); p.offsetHeight; p.classList.add("wiggle"); });
+  });
+  // tap the window → birds drift by (a shooting star at night)
+  var win = document.querySelector(".window");
+  if (win) {
+    win.style.cursor = "pointer"; win.title = "tap the sky";
+    win.addEventListener("click", function () {
+      var f = document.createElement("div"); f.className = "flyby";
+      f.innerHTML = night
+        ? '<svg viewBox="0 0 40 20"><path d="M2 7 L30 13"/><path d="M30 13 l6 -3 -1 6 z"/></svg>'
+        : '<svg viewBox="0 0 40 20"><path d="M3 12 q5 -6 10 0 q5 -6 10 0"/></svg>';
+      win.appendChild(f); setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 2500);
+    });
+  }
+  // cozy lamp → warm light over the room (persists)
+  var lamp = document.getElementById("lamp");
+  if (lamp) {
+    if (localStorage.getItem("room_cozy") === "1") { document.body.classList.add("cozy"); lamp.classList.add("on"); }
+    lamp.addEventListener("click", function () {
+      var on = document.body.classList.toggle("cozy"); lamp.classList.toggle("on", on);
+      try { localStorage.setItem("room_cozy", on ? "1" : "0"); } catch (e) {}
+    });
+  }
+
+  if (R.generated_at) document.getElementById("stamp").textContent = "synced " + R.generated_at.replace("T", " ");
+})();
+</script>
+</body>
+</html>

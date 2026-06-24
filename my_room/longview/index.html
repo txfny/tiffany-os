@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the long view — tiffany os</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F2EADB; --paper-2: #F8F1E4; --paper-3: #EADFC9;
+    --ink: #4A4136; --ink-soft: #6E6354; --ink-faint: #A4977F;
+    --line: rgba(74,65,54,.30); --line-soft: rgba(74,65,54,.15);
+    --honey: #E7BE76; --sage: #9CAE86; --sage-soft: #C9D6B8; --blush: #D69E8E; --blush-soft: #EBD0C7;
+    --dusk: #C7B2CE; --skyblue: #AEC8CC;
+    --serif: "Newsreader", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--paper); }
+  body { font-family: var(--serif); color: var(--ink); font-size: 17px; line-height: 1.6; font-weight: 300; -webkit-font-smoothing: antialiased; }
+  body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5;
+    background-image: radial-gradient(circle at 25% 35%, rgba(74,65,54,.02) 1px, transparent 2px),
+                      radial-gradient(circle at 75% 70%, rgba(74,65,54,.02) 1px, transparent 2px);
+    background-size: 26px 26px, 34px 34px; }
+  body.cozy::after { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(circle at 88% 90%, rgba(231,190,118,.30), transparent 56%),
+                radial-gradient(circle at 50% 0%, rgba(231,190,118,.10), transparent 50%); }
+
+  .wrap { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 0 24px 100px 24px; }
+
+  /* back */
+  .back { display: inline-flex; align-items: center; gap: 8px; margin-top: 26px; font-style: italic; font-size: 14px;
+          color: var(--ink-faint); text-decoration: none; transition: color .2s, gap .2s; }
+  .back:hover { color: var(--blush); gap: 12px; }
+
+  /* hero */
+  .hero { padding: 30px 0 10px; }
+  .eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 14px; }
+  .title { font-style: italic; font-weight: 300; font-size: clamp(34px, 6vw, 52px); line-height: 1.05; letter-spacing: -0.01em; margin-bottom: 16px; }
+  .sub { font-style: italic; font-size: 18px; color: var(--ink-soft); line-height: 1.55; max-width: 30em; }
+  .sub b { font-weight: 400; color: var(--ink); font-style: normal; }
+
+  /* stat ribbon */
+  .ribbon { display: flex; flex-wrap: wrap; gap: 22px; margin: 26px 0 6px; padding: 16px 0; border-top: 1px dashed var(--line-soft); border-bottom: 1px dashed var(--line-soft); }
+  .rstat .n { font-size: 26px; font-style: italic; line-height: 1; }
+  .rstat .k { font-family: var(--mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin-top: 6px; }
+
+  /* filter chips */
+  .filters { display: flex; flex-wrap: wrap; gap: 7px; margin: 24px 0 8px; }
+  .chip { font-style: italic; font-size: 13.5px; color: var(--ink-soft); background: var(--paper-2);
+          border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px; cursor: pointer; transition: all .15s ease; }
+  .chip:hover { border-color: var(--sage); color: var(--ink); transform: translateY(-1px); }
+  .chip.active { background: var(--ink); color: var(--paper-2); border-color: var(--ink); }
+
+  /* timeline */
+  .thread { position: relative; margin-top: 18px; padding-left: 34px; }
+  .thread::before { content: ""; position: absolute; left: 9px; top: 8px; bottom: 8px; width: 1px; border-left: 1px dashed var(--line); }
+  .moment { position: relative; margin-bottom: 22px; animation: rise .4s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+  .dot { position: absolute; left: -34px; top: 6px; width: 16px; height: 16px; border-radius: 50%;
+         background: var(--paper); border: 1.5px solid var(--ink-faint); display: flex; align-items: center; justify-content: center; }
+  .dot i { width: 7px; height: 7px; border-radius: 50%; display: block; }
+  .when { font-family: var(--mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 5px; }
+  .card { background: var(--paper-2); border: 1.4px solid var(--line); border-radius: 14px; padding: 15px 18px; box-shadow: 0 4px 0 var(--line-soft); }
+  .card.knowing { background: color-mix(in srgb, var(--blush-soft) 35%, var(--paper-2)); border-color: color-mix(in srgb, var(--blush) 40%, var(--line)); }
+  .card .kind { font-family: var(--mono); font-size: 8.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 7px; }
+  .card .h { font-style: italic; font-size: 19px; color: var(--ink); line-height: 1.25; margin-bottom: 6px; }
+  .card .b { font-size: 15.5px; color: var(--ink-soft); line-height: 1.55; }
+  .card.knowing .b { font-style: italic; color: var(--ink); }
+
+  .tag-strength    { background: var(--sage); }
+  .tag-responsive  { background: var(--skyblue); }
+  .tag-alive       { background: var(--honey); }
+  .tag-growth      { background: var(--blush); }
+
+  .endcap { text-align: center; margin-top: 14px; padding-top: 26px; }
+  .endcap svg { width: 56px; height: 20px; stroke: var(--blush); fill: none; stroke-width: 1.2; stroke-linecap: round; margin-bottom: 12px; }
+  .endcap p { font-style: italic; font-size: 14px; color: var(--ink-faint); line-height: 1.7; }
+  .stamp { font-family: var(--mono); font-size: 9px; color: var(--ink-faint); opacity: .55; text-align: center; margin-top: 14px; }
+  .empty { font-style: italic; color: var(--ink-faint); padding: 40px 0; text-align: center; }
+
+  .lamp { position: fixed; right: 22px; bottom: 18px; z-index: 6; background: none; border: 0; cursor: pointer; padding: 6px; line-height: 0; }
+  .lamp svg { width: 44px; height: 52px; fill: none; stroke: var(--ink-faint); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; transition: stroke .25s ease; }
+  .lamp:hover svg { stroke: var(--ink); }
+  .lamp.on .bulb { fill: var(--honey); stroke: none; opacity: .65; }
+  .lamp.on svg { stroke: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">‹ back to the room</a>
+
+  <div class="hero">
+    <div class="eyebrow">the long view</div>
+    <h1 class="title" id="title">look how far, tiff.</h1>
+    <p class="sub" id="sub">every receipt that you're getting stronger, more responsive, more <b>here</b> — and the things worth remembering you said along the way. this is growth on display. never a scale. never a number going down.</p>
+    <div class="ribbon" id="ribbon"></div>
+  </div>
+
+  <div class="filters" id="filters"></div>
+  <div class="thread" id="thread"></div>
+
+  <div class="endcap">
+    <svg viewBox="0 0 56 20"><path d="M2 13c6-9 13-9 16 0s11 9 16-2 6-5 10 2"/></svg>
+    <p>you didn't get here by accident. you kept showing up. ♡</p>
+  </div>
+  <p class="stamp" id="stamp"></p>
+</div>
+
+<button class="lamp" id="lamp" aria-label="cozy light" title="cozy light">
+  <svg viewBox="0 0 44 52"><path class="bulb" d="M11 19 L22 4 L33 19 Z"/><path d="M11 19 L33 19"/><line x1="22" y1="19" x2="22" y2="42"/><path d="M13 48 q9 -8 18 0 z"/></svg>
+</button>
+
+<script src="longview-data.js"></script>
+<script>
+(function () {
+  var LV = window.LONGVIEW || { moments: [], stats: {} };
+  function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+
+  var DAYS = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+  var MONTHS = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+  var t0 = new Date(), todayKey = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate());
+  function when(s) {
+    if (!s) return "";
+    var p = s.split("-"), d = new Date(+p[0], +p[1]-1, +p[2]);
+    var diff = Math.round((todayKey - d) / 86400000);
+    var rel = diff <= 0 ? "today" : diff === 1 ? "yesterday" : diff < 7 ? DAYS[d.getDay()] : MONTHS[+p[1]-1] + " " + (+p[2]);
+    return rel;
+  }
+
+  // stat ribbon
+  var st = LV.stats || {}, ribbon = [];
+  if (st.sessions_logged) ribbon.push([st.sessions_logged, "days shown up"]);
+  if (st.moments) ribbon.push([st.moments, "moments worth keeping"]);
+  if (st.hrv_low != null && st.hrv_high != null) ribbon.push([st.hrv_low + "→" + st.hrv_high, "hrv range (it answers)"]);
+  document.getElementById("ribbon").innerHTML = ribbon.map(function (r) {
+    return '<div class="rstat"><div class="n">' + esc(r[0]) + '</div><div class="k">' + esc(r[1]) + '</div></div>';
+  }).join("");
+
+  var KINDLABEL = { receipt: "a receipt", strength: "stronger", responsive: "responsive", alive: "being that girl", knowing: "the knowing", context: "how you came in" };
+  var FILTERS = [
+    { key: "all", label: "everything" },
+    { key: "strength", label: "stronger" },
+    { key: "responsive", label: "responsive body" },
+    { key: "alive", label: "being that girl" },
+    { key: "growth", label: "the knowing" }
+  ];
+  var active = "all", thread = document.getElementById("thread");
+
+  function render() {
+    var list = (LV.moments || []).filter(function (m) {
+      if (active === "all") return true;
+      if (active === "growth") return m.tag === "growth" || m.kind === "knowing" || m.kind === "context";
+      return m.tag === active;
+    });
+    if (!list.length) { thread.innerHTML = '<div class="empty">nothing here yet — it fills as you live it.</div>'; return; }
+    thread.innerHTML = list.map(function (m, idx) {
+      var tagClass = "tag-" + (m.tag || "growth");
+      var isKnowing = (m.kind === "knowing" || m.kind === "context");
+      return '<div class="moment" style="animation-delay:' + Math.min(idx * 30, 360) + 'ms">' +
+        '<span class="dot"><i class="' + tagClass + '"></i></span>' +
+        '<div class="when">' + esc(when(m.date)) + '</div>' +
+        '<div class="card' + (isKnowing ? ' knowing' : '') + '">' +
+          '<div class="kind">' + esc(KINDLABEL[m.kind] || m.kind || "") + '</div>' +
+          (m.title ? '<div class="h">' + esc(m.title) + '</div>' : '') +
+          '<div class="b">' + esc(m.body) + '</div>' +
+        '</div></div>';
+    }).join("");
+  }
+
+  var fbox = document.getElementById("filters");
+  FILTERS.forEach(function (f) {
+    var c = document.createElement("div");
+    c.className = "chip" + (f.key === "all" ? " active" : "");
+    c.textContent = f.label;
+    c.onclick = function () {
+      active = f.key;
+      [].forEach.call(fbox.children, function (x) { x.classList.remove("active"); });
+      c.classList.add("active");
+      render();
+    };
+    fbox.appendChild(c);
+  });
+  render();
+
+  if (LV.generated_at) document.getElementById("stamp").textContent = "synced " + LV.generated_at.replace("T", " ");
+
+  var lamp = document.getElementById("lamp");
+  if (localStorage.getItem("room_cozy") === "1") { document.body.classList.add("cozy"); lamp.classList.add("on"); }
+  lamp.addEventListener("click", function () {
+    var on = document.body.classList.toggle("cozy"); lamp.classList.toggle("on", on);
+    try { localStorage.setItem("room_cozy", on ? "1" : "0"); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>

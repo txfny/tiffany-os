@@ -20,14 +20,13 @@ Influential: `symptom_load`, `subjective_energy`.
 
 ## SCORING — INDIVIDUALIZED BASELINE MODEL
 
-**HRV scoring uses the user's own rolling baseline, not fixed thresholds.**
+**HRV scoring uses the user's own rolling 14-day baseline, not fixed thresholds.**
 
-1. Get the current baseline (14-day rolling mean and SD, or cold start values if < 14 days of data).
-   - Cold start: mean 57 ms, SD 4.5 ms (from Mar 5–14 data)
+1. The pipeline computes a rolling baseline from the last 14 days of session data (mean + SD). Falls back to cold start values (mean 57ms, SD 4.5ms) only if fewer than 7 days of data exist. SD has a floor of 4.5ms to prevent over-sensitivity.
 2. Compare today's HRV to baseline:
-   - **HIGH:** within 0.5 SD of mean or above (~55+ ms at cold start)
-   - **MODERATE:** 0.5–1.5 SD below mean (~50–55 ms at cold start)
-   - **LOW:** > 1.5 SD below mean (~below 50 ms at cold start)
+   - **HIGH:** within 0.5 SD of mean or above
+   - **MODERATE:** 0.5–1.5 SD below mean
+   - **LOW:** > 1.5 SD below mean
 
 **RHR and sleep use the same thresholds as v1** (already individualized via delta).
 
@@ -38,6 +37,7 @@ Influential: `symptom_load`, `subjective_energy`.
 
 3. Apply conflict resolution: **lowest signal wins.**
 4. Subjective energy override: can downgrade (energy ≤ 3 with HIGH → MODERATE), never upgrade.
+5. **Dietary context:** if `dietary_context` is set in the snapshot (e.g., during a religious fast), readiness is capped at MODERATE even if all signals say HIGH. This reduces volume while maintaining intensity — critical for preserving muscle during protein restriction.
 
 ---
 

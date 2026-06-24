@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>learning — tiffany os</title>
+<link rel="stylesheet" href="shared/walk.css">
+<style>
+  .lib-intro {
+    max-width: 640px;
+    margin: 0 auto 40px;
+  }
+  .lib-intro h1 {
+    font-style: italic;
+    font-weight: 400;
+    font-size: 32px;
+    color: var(--ink);
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .lib-intro p {
+    color: var(--ink-soft);
+    font-size: 16px;
+    line-height: 1.65;
+    margin-bottom: 10px;
+  }
+  .topic-list {
+    max-width: 640px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .topic-card {
+    display: block;
+    padding: 22px 24px;
+    background: var(--cream-2);
+    border: 1px solid var(--terra-soft);
+    border-radius: 14px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.18s ease;
+    position: relative;
+  }
+  .topic-card:hover { background: #FFFBF1; border-color: var(--terra); transform: translateY(-1px); }
+  .topic-card .topic-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--terra);
+    margin-bottom: 6px;
+  }
+  .topic-card .topic-name {
+    font-style: italic;
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 6px;
+    line-height: 1.25;
+  }
+  .topic-card .topic-blurb {
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .topic-card .topic-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.04em;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .topic-card .topic-meta .progress {
+    color: var(--terra);
+  }
+  .topic-card.is-future {
+    opacity: 0.5;
+    pointer-events: none;
+    background: transparent;
+    border-style: dashed;
+  }
+  .topic-card .topic-arrow {
+    position: absolute;
+    right: 24px;
+    top: 24px;
+    color: var(--ink-faint);
+    font-family: -apple-system, Arial, sans-serif;
+    font-size: 20px;
+  }
+  .ask {
+    max-width: 640px;
+    margin: 36px auto 0;
+    padding: 18px 22px;
+    border: 1px dashed var(--terra-line);
+    border-radius: 12px;
+    text-align: center;
+  }
+  .ask p {
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="spine" aria-hidden="true"></div>
+
+<header class="walk-header">
+  <div class="walk-crumb">
+    <a href="../index.html">← back to the room</a>
+  </div>
+</header>
+
+<div class="lib-intro">
+  <h1>learning</h1>
+  <p>topics you can come into and out of. each topic is a small series of interactive walks. each walk is 3–7 steps, designed to be revisited — re-reading is the point.</p>
+  <p style="color: var(--ink-faint); font-size: 14px; font-style: italic;">markers below show when you last came, not whether you finished. nothing to complete.</p>
+</div>
+
+<div class="topic-list" id="topic-list">
+  <!-- populated by JS -->
+</div>
+
+<div class="ask">
+  <p>want a topic that's not here? tell claude in the room — "add a topic for X" or "go deeper on Y" — and the next walk gets written.</p>
+</div>
+
+<script src="shared/walk.js"></script>
+<script>
+const TOPICS = [
+  {
+    id: "brain-and-the-model",
+    eyebrow: "ai ↔ neuroscience",
+    name: "brain and the model",
+    blurb: "the family resemblance between your brain and a transformer. attention, memory, prediction, encoding vs inference. starts simple, goes deep.",
+    href: "brain-and-the-model/index.html",
+    walks: [
+      { id: "01-attention", ready: true },
+      { id: "02-brain-attention", ready: false },
+      { id: "03-transformer-attention", ready: false },
+      { id: "04-convergence", ready: false },
+    ],
+  },
+  {
+    id: "your-nervous-system",
+    eyebrow: "neuroscience for you",
+    name: "your nervous system",
+    blurb: "what's actually happening when you run hot. cortisol, vagus, HRV, the polyvagal model and what holds up vs what doesn't.",
+    walks: [],
+    future: true,
+  },
+  {
+    id: "egyptian-arabic",
+    eyebrow: "language",
+    name: "egyptian arabic",
+    blurb: "small walks through words, scripts, and the bits of coptic context that make egyptian arabic feel like home rather than a class.",
+    walks: [],
+    future: true,
+  },
+];
+
+const list = document.getElementById("topic-list");
+TOPICS.forEach(t => {
+  const isFuture = !!t.future;
+  const el = document.createElement(isFuture ? "div" : "a");
+  if (!isFuture) el.href = t.href;
+  el.className = "topic-card" + (isFuture ? " is-future" : "");
+
+  let walksReady = 0;
+  let lastVisitOverall = null;
+  if (!isFuture) {
+    t.walks.forEach(w => {
+      if (w.ready) walksReady++;
+      const m = Walk.getMarker(t.id, w.id);
+      if (m.lastVisit) {
+        if (!lastVisitOverall || m.lastVisit > lastVisitOverall) lastVisitOverall = m.lastVisit;
+      }
+    });
+  }
+  const markerStr = lastVisitOverall ? Walk.formatMarker({ lastVisit: lastVisitOverall, visits: 1 }) : null;
+
+  let meta;
+  if (isFuture) {
+    meta = `<span>— coming, ask anytime</span>`;
+  } else {
+    meta = `
+      <span>${walksReady} of ${t.walks.length} walks ready</span>
+      ${markerStr ? `<span class="progress">· ${markerStr}</span>` : ""}
+    `;
+  }
+
+  el.innerHTML = `
+    <div class="topic-eyebrow">${t.eyebrow}</div>
+    <div class="topic-name">${t.name}</div>
+    <div class="topic-blurb">${t.blurb}</div>
+    <div class="topic-meta">${meta}</div>
+    <div class="topic-arrow">${isFuture ? "·" : "→"}</div>
+  `;
+  list.appendChild(el);
+});
+</script>
+</body>
+</html>

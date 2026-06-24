@@ -16,6 +16,7 @@ create table if not exists snapshots (
   mood integer,
   equipment_available text not null default 'home_gym',
   soreness jsonb default '{}',
+  breath_location text check (breath_location in ('chest', 'mixed', 'belly')),
   notes text,
   readiness_tier text,
   readiness_reasoning jsonb,
