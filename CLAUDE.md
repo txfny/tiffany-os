@@ -47,7 +47,38 @@ curious, strong, and present.
 
 Before building any session plan, you MUST call the deterministic tools. Do not guess session types, compute readiness in your head, or rely on conversation memory for working weights.
 
-## Tool Endpoints
+## ⚡ RUN THE PIPELINE LOCALLY — `tools/coach.py`
+
+**As of 2026-06-24 the pipeline runs LOCALLY, not in Azure.** The deployed Azure
+Functions can't see the session history, so readiness fell back to a cold_start
+HRV baseline (57) and threw **false LOWs for weeks**, and save-session/ivg/
+working-weights 500'd on a Supabase schema mismatch. `tools/coach.py` runs the
+exact same deterministic logic (the pure functions in `azure-functions/shared/`)
+against local files — readiness now uses your **real rolling baseline**.
+
+```
+python3 tools/coach.py session-type        --date YYYY-MM-DD
+python3 tools/coach.py readiness            --date YYYY-MM-DD --hrv 34 --rhr 63 --rhr7 56 --sleep 7.5 --energy 4 --symptoms 1 [--dietary orthodox_lent]
+python3 tools/coach.py ivg                  --date YYYY-MM-DD
+python3 tools/coach.py working-weights
+python3 tools/coach.py exercise-selection   --date YYYY-MM-DD --focus "Lower body + core" --location home_gym
+python3 tools/coach.py review-plan          --plan-file PLAN.json --tier MODERATE --location home_gym [--symptoms abdomen,knee] --date YYYY-MM-DD
+python3 tools/coach.py ovg                  --plan-file PLAN.json --date YYYY-MM-DD
+python3 tools/coach.py pre-session          --date YYYY-MM-DD --snapshot-file SNAP.json   # bundles all pre-session steps
+python3 tools/coach.py save-session         --file data/sessions/YYYY-MM-DD-session.json  # validates + rebuilds room/weights
+python3 tools/coach.py post-workout         --session-file data/sessions/YYYY-MM-DD-session.json
+```
+
+Every subcommand prints JSON. `pre-session` runs session-type + readiness + ivg +
+working-weights (+ exercise-selection + review-plan on strength days) in one call.
+`save-session` IS the persistence step — the local JSON file is the source of
+truth, and it reruns `build_room.py` for you.
+
+## Tool Endpoints (DEPRECATED Azure — fallback only)
+
+⚠️ **Prefer `tools/coach.py` above.** These cloud endpoints are kept only as a
+reference/fallback; several are actively broken (cold_start baseline, Supabase
+500s). Do not reach for them when the local CLI covers the step.
 
 Base URL: `https://gym-healthy-coach.azurewebsites.net/api`
 Auth: append `?code=<AZURE_FUNCTION_KEY>` to every request. Key is in `azure-functions/.env.keys` (gitignored).
@@ -77,13 +108,13 @@ Auth: append `?code=<AZURE_FUNCTION_KEY>` to every request. Key is in `azure-fun
 ## Mandatory Pipeline Order
 
 ```
-PRE-SESSION:
-1. GET  /session-type        → know what today IS (non-negotiable)
-2. POST /readiness           → compute tier from user's snapshot
-3. GET  /ivg                 → check for data gaps this week
-4. READ data/working-weights.json → current weights (LOCAL SOURCE OF TRUTH; do NOT use the /working-weights endpoint — it returns stale defaults)
-5. POST /exercise-selection  → get today's exercises (rotation logic, strength days only). NOTE: its `load` fields are ALSO stale — override every load with data/working-weights.json before showing the user.
-6. POST /review-plan        → audit exercises against context (symptoms, location, 48h history)
+PRE-SESSION:  (one shot: `python3 tools/coach.py pre-session --date YYYY-MM-DD --snapshot-file SNAP.json`)
+1. coach.py session-type        → know what today IS (non-negotiable)
+2. coach.py readiness           → compute tier from user's snapshot (REAL rolling baseline, no cold_start)
+3. coach.py ivg                 → check for data gaps this week
+4. coach.py working-weights     → current weights from data/working-weights.json (LOCAL SOURCE OF TRUTH)
+5. coach.py exercise-selection  → get today's exercises (rotation logic, strength days only). Loads come from working-weights.json — already correct.
+6. coach.py review-plan         → audit exercises against context (symptoms, location, 48h history)
 7. [Claude reviews flags, picks substitutions if needed, builds session plan + justification]
 
 POST-SESSION (after user reports what they did):
@@ -92,11 +123,11 @@ POST-SESSION (after user reports what they did):
        I had [list sessions, e.g. elliptical AM, strength PM]. Give me duration,
        calories, avg HR, peak HR, and heart rate recovery for each.'"
        Wait for user to paste the results before proceeding.
-9. ASK  energy after (1-5 or vibe), how they feel, any soreness
-10. [Claude logs session WITH the biometrics included]
-11. POST /save-session        → persist IMMEDIATELY after collecting metrics
-12. POST /post-workout-analysis → HRR trends, workload ratio, session cost (runs automatically in /post-session)
-13. POST /ovg                → validate everything before closing out
+9. ASK  how they feel, any soreness (plain English — no RPE/energy scales)
+10. [Claude writes data/sessions/YYYY-MM-DD-session.json WITH the biometrics included]
+11. coach.py save-session     → validates the JSON + reruns build_room (the local file IS the persistence)
+12. coach.py post-workout     → HRR trends, workload ratio, session cost
+13. coach.py ovg              → validate everything before closing out
 ```
 
 ## Missed Session Rescheduling
@@ -139,16 +170,17 @@ After each of these steps, emit one entry:
 
 ## Rules
 
-- NEVER skip step 1. The session type is determined by code, not by you.
-- NEVER prescribe a weight without reading `data/working-weights.json` first (the local source of truth, derived from session logs). NEVER trust the `/working-weights` endpoint or the `load` fields from `/exercise-selection` — both return stale defaults (Supabase bug). If an exercise isn't in the file, it has no logged progression and its template default stands — confirm with the user rather than assuming.
-- `data/working-weights.json` is regenerated automatically by `my_room/build_room.py`, which runs as part of post-session logging. After every `/save-session`, run `python3 my_room/build_room.py` so the source of truth (and the room) stay current.
-- NEVER pick exercises without calling /exercise-selection first (strength days).
-- NEVER present a session plan without calling /review-plan first (strength days). Map user symptoms to region keys: abdomen, lower_back, knee, shoulder, wrist, neck, hip, ankle, chest, upper_back.
-- NEVER log a session without first collecting post-workout metrics (energy, Apple Health, HRR, how they feel).
-- NEVER say a session is "logged" without calling /save-session.
+- Run the pipeline through `tools/coach.py` (local), NOT the Azure endpoints. The cloud path gives false LOWs (cold_start baseline) and 500s on save/ivg/working-weights.
+- NEVER skip step 1. The session type is determined by code (`coach.py session-type`), not by you.
+- NEVER prescribe a weight without `coach.py working-weights` (reads `data/working-weights.json`, the source of truth derived from session logs). If an exercise isn't in the file, it has no logged progression and its template default stands — confirm with the user rather than assuming.
+- `data/working-weights.json` is regenerated by `my_room/build_room.py`, which `coach.py save-session` runs for you. The local JSON session file IS the persistence layer — there is no working Supabase write.
+- NEVER pick exercises without `coach.py exercise-selection` first (strength days).
+- NEVER present a session plan without `coach.py review-plan` first (strength days). Map user symptoms to region keys: abdomen, lower_back, knee, shoulder, wrist, neck, hip, ankle, chest, upper_back.
+- NEVER log a session without first collecting post-workout metrics (Apple Health, how they feel — plain English, no scales).
+- NEVER say a session is "logged" without running `coach.py save-session`.
 - ALWAYS include `scheduled_type` and `scheduled_focus` in session JSONs (from the pipeline's `scheduled_type`/`scheduled_focus` output).
-- If /ivg returns gaps, resolve them before proceeding.
-- If /ovg returns errors, fix them before showing output to the user.
+- If `coach.py ivg` returns gaps, resolve them before proceeding.
+- If `coach.py ovg` returns errors, fix them before showing output to the user.
 
 ## Reference Files
 
@@ -157,4 +189,5 @@ After each of these steps, emit one entry:
 - `rules/cycle-phase.yaml` — OC rules (no phase-based intensity ceilings)
 - `research/citations.yaml` — research sources for justification step
 - `skills/` — coaching skill definitions (snapshot, readiness, planner, logger)
-- `data/sessions/` — session JSON files (backup, also in Supabase)
+- `data/sessions/` — session JSON files (the source of truth; no working Supabase mirror)
+- `tools/coach.py` — LOCAL pipeline CLI (replaces the Azure endpoints; wraps `azure-functions/shared/*.py` against local files)

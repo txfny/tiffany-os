@@ -2,6 +2,20 @@
 window.LONGVIEW = {
   "moments": [
     {
+      "date": "2026-06-24",
+      "kind": "receipt",
+      "tag": "responsive",
+      "title": "felt-sense / data match",
+      "body": "heavy-heart feeling before bed + RHR new high (yesterday's) = body and hardware agreeing. Good instrument check, not a disconnect."
+    },
+    {
+      "date": "2026-06-24",
+      "kind": "context",
+      "tag": "growth",
+      "title": "how you came in",
+      "body": "HRV 34 (low for her, baseline ~57), RHR 63 (yesterday's value = new logged high, +7 over 7-day avg). Felt fine, lightly tired. Noticed a 'heavy heart' feeling before bed — felt-sense matched the data. Gyno checkup: cysts look back to normal on ultrasound (full results pending). Weekend was socially 'on' both days (Sat birthday, Sun Father's Day), then trained Mon (deload upper) + Tue (hard lower+core). Today is the first low-stimulation day in ~a week."
+    },
+    {
       "date": "2026-06-23",
       "kind": "receipt",
       "tag": "strength",
@@ -633,11 +647,11 @@ window.LONGVIEW = {
     }
   ],
   "stats": {
-    "sessions_logged": 96,
-    "moments": 90,
+    "sessions_logged": 97,
+    "moments": 92,
     "hrv_low": 32,
     "hrv_high": 140,
     "since": "2026-03-05"
   },
-  "generated_at": "2026-06-23T21:21:42"
+  "generated_at": "2026-06-24T20:49:24"
 };

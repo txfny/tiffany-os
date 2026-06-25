@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the map — tiffany os</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F2EADB; --paper-2: #F8F1E4; --paper-3: #EADFC9;
+    --ink: #4A4136; --ink-soft: #6E6354; --ink-faint: #A4977F;
+    --line: rgba(74,65,54,.30); --line-soft: rgba(74,65,54,.15);
+    --honey: #E7BE76; --sage: #9CAE86; --sage-soft: #C9D6B8; --blush: #D69E8E; --blush-soft: #EBD0C7;
+    --dusk: #C7B2CE; --skyblue: #AEC8CC; --sea: #DCE7E4;
+    --serif: "Newsreader", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--paper); }
+  body { font-family: var(--serif); color: var(--ink); font-size: 17px; line-height: 1.6; font-weight: 300; -webkit-font-smoothing: antialiased; }
+  body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5;
+    background-image: radial-gradient(circle at 25% 35%, rgba(74,65,54,.02) 1px, transparent 2px),
+                      radial-gradient(circle at 75% 70%, rgba(74,65,54,.02) 1px, transparent 2px);
+    background-size: 26px 26px, 34px 34px; }
+  body.cozy::after { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(circle at 88% 90%, rgba(231,190,118,.30), transparent 56%),
+                radial-gradient(circle at 50% 0%, rgba(231,190,118,.10), transparent 50%); }
+
+  .wrap { position: relative; z-index: 1; max-width: 940px; margin: 0 auto; padding: 0 24px 110px 24px; }
+  .back { display: inline-flex; align-items: center; gap: 8px; margin-top: 26px; font-style: italic; font-size: 14px;
+          color: var(--ink-faint); text-decoration: none; transition: color .2s, gap .2s; }
+  .back:hover { color: var(--blush); gap: 12px; }
+
+  .hero { padding: 26px 0 6px; }
+  .eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 12px; }
+  .title { font-style: italic; font-weight: 300; font-size: clamp(34px, 6vw, 52px); line-height: 1.05; letter-spacing: -0.01em; margin-bottom: 14px; }
+  .sub { font-style: italic; font-size: 18px; color: var(--ink-soft); line-height: 1.55; max-width: 32em; }
+  .sub b { font-weight: 400; color: var(--ink); font-style: normal; }
+
+  .ribbon { display:flex; flex-wrap:wrap; gap: 26px; margin: 22px 0 4px; padding: 16px 0; border-top: 1px dashed var(--line-soft); border-bottom: 1px dashed var(--line-soft); }
+  .rstat .n { font-size: 28px; font-style: italic; line-height: 1; }
+  .rstat .n .been { color: var(--honey); } .rstat .n .dream { color: var(--blush); }
+  .rstat .k { font-family: var(--mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin-top: 6px; }
+
+  .toggles { display:flex; flex-wrap:wrap; gap: 8px; align-items:center; margin: 18px 0 10px; }
+  .toggle { display:inline-flex; align-items:center; gap:7px; font-style: italic; font-size: 14px; color: var(--ink-soft);
+            background: var(--paper-2); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; transition: all .15s; user-select:none; }
+  .toggle.off { opacity: .42; }
+  .toggle .swatch { width: 11px; height: 11px; border-radius: 50%; }
+  .swatch.been { background: var(--honey); border:1px solid color-mix(in srgb,var(--honey) 70%, var(--ink)); }
+  .swatch.dream { background: transparent; border: 1.6px solid var(--blush); }
+  .swatch.home { background: var(--blush); border:1px solid var(--ink); }
+  .hint { font-family: var(--mono); font-size: 9px; letter-spacing:.06em; color: var(--ink-faint); margin-left:auto; }
+
+  .mapcard { position: relative; background: var(--paper-2); border: 1.5px solid var(--line); border-radius: 18px;
+             box-shadow: 0 5px 0 var(--line-soft); overflow: hidden; }
+  svg.map { display:block; width: 100%; height: auto; background: var(--sea); cursor: grab; }
+  svg.map:active { cursor: grabbing; }
+  .country { fill: var(--paper-3); stroke: var(--sage-soft); stroke-width: .5px; }
+  .pin-been { fill: var(--honey); stroke: #8a6a2e; stroke-width: .6px; cursor: pointer; transition: r .12s; }
+  .pin-dream { fill: var(--paper-2); stroke: var(--blush); stroke-width: 1.5px; cursor: pointer; transition: r .12s; }
+  .pin-home { fill: var(--blush); stroke: var(--ink); stroke-width: .8px; cursor: pointer; }
+  .pin-home-ring { fill: none; stroke: var(--blush); stroke-width: 1.2px; opacity: .6; transform-box: fill-box; transform-origin: center;
+                   animation: pulse 2.8s ease-out infinite; }
+  @keyframes pulse { 0%{ r:5; opacity:.6 } 100%{ r:16; opacity:0 } }
+
+  .tip { position: absolute; z-index: 5; pointer-events: none; background: var(--ink); color: var(--paper-2);
+         font-family: var(--mono); font-size: 10px; letter-spacing:.03em; padding: 5px 9px; border-radius: 7px; opacity: 0; transition: opacity .12s; white-space: nowrap; transform: translate(-50%, -140%); }
+  .tip .sub2 { color: var(--sage-soft); display:block; font-size: 8.5px; margin-top:1px; }
+
+  .lists { display:grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 28px; }
+  @media (max-width: 620px){ .lists { grid-template-columns: 1fr; } }
+  .lists h3 { font-style: italic; font-weight: 400; font-size: 20px; margin-bottom: 10px; display:flex; align-items:center; gap:8px; }
+  .lists .col-been h3 .swatch, .lists .col-dream h3 .swatch { width:12px; height:12px; border-radius:50%; }
+  .cat { border-bottom: 1px dashed var(--line-soft); }
+  .cat-head { display:flex; align-items:center; gap:9px; width:100%; background:none; border:0; cursor:pointer;
+              font-family: inherit; text-align:left; padding: 11px 2px; color: var(--ink); transition: color .15s; }
+  .cat-head:hover { color: var(--blush); }
+  .cat-head .caret { font-size: 10px; color: var(--ink-faint); transition: transform .18s; width: 9px; }
+  .cat.open .cat-head .caret { transform: rotate(90deg); }
+  .cat-name { font-style: italic; font-size: 16.5px; }
+  .cat-count { font-family: var(--mono); font-size: 9px; letter-spacing:.1em; color: var(--ink-faint); margin-left: auto; }
+  .cat-body { display:none; padding: 0 2px 12px 18px; animation: slidein .2s ease; }
+  .cat.open .cat-body { display:block; }
+  @keyframes slidein { from { opacity:0; transform: translateY(-4px) } to { opacity:1; transform:none } }
+  .region { margin-bottom: 9px; }
+  .region .rname { font-family: var(--mono); font-size: 8.5px; letter-spacing:.12em; text-transform:uppercase; color: var(--ink-faint); margin-bottom: 3px; }
+  .place { display:inline-block; font-size: 14px; color: var(--ink-soft); margin: 3px 7px 3px 0; cursor: pointer;
+           background: var(--paper); border:1px solid var(--line-soft); border-radius:999px; padding: 3px 11px; transition: all .12s; }
+  .place:hover { color: var(--ink); border-color: var(--blush); transform: translateY(-1px); }
+
+  .stamp { font-family: var(--mono); font-size: 9px; color: var(--ink-faint); opacity: .55; text-align: center; margin-top: 22px; }
+
+  .lamp { position: fixed; right: 22px; bottom: 18px; z-index: 6; background: none; border: 0; cursor: pointer; padding: 6px; line-height: 0; }
+  .lamp svg { width: 44px; height: 52px; fill: none; stroke: var(--ink-faint); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; transition: stroke .25s ease; }
+  .lamp:hover svg { stroke: var(--ink); }
+  .lamp.on .bulb { fill: var(--honey); stroke: none; opacity: .65; }
+  .lamp.on svg { stroke: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">‹ back to the room</a>
+
+  <div class="hero">
+    <div class="eyebrow">the map</div>
+    <h1 class="title">look where you've wandered.</h1>
+    <p class="sub">every dot is a place you've stood — and every little ring is one still waiting for you. <b>Egypt</b>'s the heart of it, home you keep coming back to.</p>
+    <div class="ribbon" id="ribbon"></div>
+  </div>
+
+  <div class="toggles">
+    <span class="toggle" data-layer="been"><span class="swatch been"></span>been here</span>
+    <span class="toggle" data-layer="dream"><span class="swatch dream"></span>dreaming of</span>
+    <span class="toggle" data-layer="home"><span class="swatch home"></span>home</span>
+    <span class="hint">scroll / pinch to zoom · drag to pan</span>
+  </div>
+
+  <div class="mapcard">
+    <svg class="map" id="map" viewBox="0 0 940 480" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="tip" id="tip"></div>
+  </div>
+
+  <div class="lists">
+    <div class="col-been"><h3><span class="swatch been"></span>been there</h3><div id="list-been"></div></div>
+    <div class="col-dream"><h3><span class="swatch dream"></span>dreaming of</h3><div id="list-dream"></div></div>
+  </div>
+
+  <p class="stamp" id="stamp"></p>
+</div>
+
+<button class="lamp" id="lamp" aria-label="cozy light" title="cozy light">
+  <svg viewBox="0 0 44 52"><path class="bulb" d="M11 19 L22 4 L33 19 Z"/><path d="M11 19 L33 19"/><line x1="22" y1="19" x2="22" y2="42"/><path d="M13 48 q9 -8 18 0 z"/></svg>
+</button>
+
+<script src="vendor/d3.min.js"></script>
+<script src="vendor/topojson-client.min.js"></script>
+<script src="vendor/world-110m.js"></script>
+<script src="places-data.js"></script>
+<script>
+(function () {
+  var P = window.PLACES || { been: [], wishlist: [], home: null };
+  var W = 940, H = 480;
+  var svg = d3.select("#map");
+  var tip = document.getElementById("tip");
+  var mapcard = document.querySelector(".mapcard");
+
+  var land = topojson.feature(window.WORLD_TOPO, window.WORLD_TOPO.objects.countries);
+  var proj = d3.geoNaturalEarth1().fitExtent([[8, 8], [W - 8, H - 8]], land);
+  var path = d3.geoPath(proj);
+
+  var g = svg.append("g");
+  g.selectAll("path.country").data(land.features).enter()
+    .append("path").attr("class", "country").attr("d", path);
+
+  var pins = g.append("g");
+
+  function showTip(d, evt) {
+    var pt = proj([d.lon, d.lat]);
+    var rect = mapcard.getBoundingClientRect();
+    // place tip relative to card using current screen position of the pin
+    var m = d3.pointer(evt, mapcard);
+    tip.style.left = m[0] + "px";
+    tip.style.top = m[1] + "px";
+    tip.innerHTML = d.name + (d.note ? '<span class="sub2">' + d.note + '</span>' : (d.region ? '<span class="sub2">' + d.region + '</span>' : ''));
+    tip.style.opacity = 1;
+  }
+  function hideTip() { tip.style.opacity = 0; }
+
+  function drawPins(arr, cls, r) {
+    return pins.selectAll("circle." + cls).data(arr).enter()
+      .append("circle").attr("class", cls)
+      .attr("cx", function (d) { return proj([d.lon, d.lat])[0]; })
+      .attr("cy", function (d) { return proj([d.lon, d.lat])[1]; })
+      .attr("r", r)
+      .on("mousemove", function (e, d) { showTip(d, e); })
+      .on("mouseleave", hideTip)
+      .on("click", function (e, d) { showTip(d, e); });
+  }
+
+  var beenSel  = drawPins(P.been, "pin-been", 4);
+  var dreamSel = drawPins(P.wishlist, "pin-dream", 3.8);
+
+  // home (Egypt) — pulsing ring + dot
+  var homeSel = pins.append("g");
+  if (P.home) {
+    var hp = proj([P.home.lon, P.home.lat]);
+    homeSel.append("circle").attr("class", "pin-home-ring").attr("cx", hp[0]).attr("cy", hp[1]).attr("r", 5);
+    homeSel.append("circle").attr("class", "pin-home").attr("cx", hp[0]).attr("cy", hp[1]).attr("r", 5)
+      .on("mousemove", function (e) { showTip(P.home, e); }).on("mouseleave", hideTip)
+      .on("click", function (e) { showTip(P.home, e); });
+  }
+
+  // zoom / pan
+  var zoom = d3.zoom().scaleExtent([1, 9]).translateExtent([[0, 0], [W, H]]).on("zoom", function (e) {
+    g.attr("transform", e.transform);
+    g.selectAll("circle").attr("vector-effect", "non-scaling-stroke");
+    // keep pins a readable size as you zoom in
+    var k = e.transform.k;
+    beenSel.attr("r", 4 / Math.sqrt(k));
+    dreamSel.attr("r", 3.8 / Math.sqrt(k));
+    homeSel.selectAll(".pin-home").attr("r", 5 / Math.sqrt(k));
+    g.selectAll(".country").attr("stroke-width", (.5 / k) + "px");
+  });
+  svg.call(zoom);
+
+  // toggles
+  var layers = { been: beenSel, dream: dreamSel };
+  document.querySelectorAll(".toggle").forEach(function (t) {
+    t.addEventListener("click", function () {
+      var key = t.dataset.layer;
+      var on = !t.classList.toggle("off");
+      if (key === "home") { homeSel.style("display", on ? null : "none"); return; }
+      layers[key].style("display", on ? null : "none");
+    });
+  });
+
+  // ribbon stats
+  var beenCountries = new Set(P.been.map(function (d) { return d.region; })).size;
+  document.getElementById("ribbon").innerHTML =
+    '<div class="rstat"><div class="n"><span class="been">' + P.been.length + '</span></div><div class="k">places stood</div></div>' +
+    '<div class="rstat"><div class="n"><span class="dream">' + P.wishlist.length + '</span></div><div class="k">still calling</div></div>' +
+    '<div class="rstat"><div class="n">' + (new Set(P.been.concat(P.wishlist).map(function(d){return d.region;})).size) + '</div><div class="k">corners of the map</div></div>';
+
+  // lists grouped by region, click to fly to + flash the pin
+  function flyTo(d) {
+    var p = proj([d.lon, d.lat]);
+    var k = 4;
+    svg.transition().duration(700).call(
+      zoom.transform,
+      d3.zoomIdentity.translate(W / 2, H / 2).scale(k).translate(-p[0], -p[1])
+    );
+  }
+  // roll the many country-regions up into a few continents
+  var CONTINENT = {
+    "UK":"Europe","Europe":"Europe","Italy":"Europe","France":"Europe","Spain":"Europe","Portugal":"Europe",
+    "Germany":"Europe","Austria":"Europe","Czechia":"Europe","Switzerland":"Europe","Poland":"Europe",
+    "Ireland":"Europe","Norway":"Europe","Iceland":"Europe","Finland":"Europe","Croatia":"Europe",
+    "Hungary":"Europe","Sweden":"Europe","Malta":"Europe","Monaco":"Europe",
+    "USA":"North America","Canada":"North America",
+    "Caribbean":"Latin America","Peru":"Latin America","Colombia":"Latin America","Brazil":"Latin America",
+    "Asia":"Asia & Pacific","Indonesia":"Asia & Pacific","Thailand":"Asia & Pacific","Australia":"Asia & Pacific",
+    "South Africa":"Africa & Middle East","Morocco":"Africa & Middle East","UAE":"Africa & Middle East"
+  };
+  var CONT_ORDER = ["Europe","North America","Latin America","Asia & Pacific","Africa & Middle East"];
+
+  function buildList(arr, elId, openFirst) {
+    var byCont = {};
+    arr.forEach(function (d) {
+      var c = CONTINENT[d.region] || "Elsewhere";
+      (byCont[c] = byCont[c] || {});
+      (byCont[c][d.region] = byCont[c][d.region] || []).push(d);
+    });
+    var el = document.getElementById(elId);
+    var conts = CONT_ORDER.filter(function (c) { return byCont[c]; })
+      .concat(Object.keys(byCont).filter(function (c) { return CONT_ORDER.indexOf(c) === -1; }));
+
+    conts.forEach(function (c, ci) {
+      var regions = byCont[c];
+      var total = Object.keys(regions).reduce(function (n, r) { return n + regions[r].length; }, 0);
+      var cat = document.createElement("div");
+      cat.className = "cat" + (openFirst && ci === 0 ? " open" : "");
+      var body = Object.keys(regions).map(function (r) {
+        var chips = regions[r].map(function (d) {
+          return '<span class="place" data-lat="' + d.lat + '" data-lon="' + d.lon + '">' + d.name + '</span>';
+        }).join("");
+        // only show the country sub-label when it adds info (not when it equals the continent bucket)
+        var label = (r === c || r === "Europe" || r === "USA" || r === "Asia") ? "" : '<div class="rname">' + r + '</div>';
+        return '<div class="region">' + label + chips + '</div>';
+      }).join("");
+      cat.innerHTML =
+        '<button class="cat-head"><span class="caret">▸</span><span class="cat-name">' + c + '</span>' +
+        '<span class="cat-count">' + total + '</span></button>' +
+        '<div class="cat-body">' + body + '</div>';
+      el.appendChild(cat);
+      cat.querySelector(".cat-head").addEventListener("click", function () { cat.classList.toggle("open"); });
+    });
+
+    el.querySelectorAll(".place").forEach(function (s) {
+      s.addEventListener("click", function () { flyTo({ lon: +s.dataset.lon, lat: +s.dataset.lat }); });
+    });
+  }
+  buildList(P.been, "list-been", true);
+  buildList(P.wishlist, "list-dream", true);
+
+  document.getElementById("stamp").textContent = "from your places-to-go list · updated " + (P.generated || "");
+
+  // cozy lamp
+  var lamp = document.getElementById("lamp");
+  if (localStorage.getItem("cozy") === "1") { document.body.classList.add("cozy"); lamp.classList.add("on"); }
+  lamp.onclick = function () {
+    var on = document.body.classList.toggle("cozy");
+    lamp.classList.toggle("on", on);
+    localStorage.setItem("cozy", on ? "1" : "0");
+  };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the reading room — tiffany os</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F2EADB; --paper-2: #F8F1E4; --paper-3: #EADFC9;
+    --ink: #4A4136; --ink-soft: #6E6354; --ink-faint: #A4977F;
+    --line: rgba(74,65,54,.30); --line-soft: rgba(74,65,54,.15);
+    --honey: #E7BE76; --sage: #9CAE86; --sage-soft: #C9D6B8; --blush: #D69E8E; --blush-soft: #EBD0C7;
+    --dusk: #C7B2CE; --skyblue: #AEC8CC;
+    --serif: "Newsreader", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--paper); }
+  body { font-family: var(--serif); color: var(--ink); font-size: 17px; line-height: 1.6; font-weight: 300; -webkit-font-smoothing: antialiased; }
+  body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5;
+    background-image: radial-gradient(circle at 25% 35%, rgba(74,65,54,.02) 1px, transparent 2px),
+                      radial-gradient(circle at 75% 70%, rgba(74,65,54,.02) 1px, transparent 2px);
+    background-size: 26px 26px, 34px 34px; }
+  body.cozy::after { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(circle at 88% 90%, rgba(231,190,118,.30), transparent 56%),
+                radial-gradient(circle at 50% 0%, rgba(231,190,118,.10), transparent 50%); }
+
+  .wrap { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 0 24px 110px 24px; }
+
+  .back { display: inline-flex; align-items: center; gap: 8px; margin-top: 26px; font-style: italic; font-size: 14px;
+          color: var(--ink-faint); text-decoration: none; transition: color .2s, gap .2s; }
+  .back:hover { color: var(--blush); gap: 12px; }
+
+  .hero { padding: 30px 0 6px; }
+  .eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 14px; }
+  .title { font-style: italic; font-weight: 300; font-size: clamp(34px, 6vw, 52px); line-height: 1.05; letter-spacing: -0.01em; margin-bottom: 16px; }
+  .sub { font-style: italic; font-size: 18px; color: var(--ink-soft); line-height: 1.55; max-width: 32em; }
+  .sub b { font-weight: 400; color: var(--ink); font-style: normal; }
+
+  /* section label */
+  .seclabel { display:flex; align-items:baseline; gap:10px; margin: 34px 0 14px; }
+  .seclabel h2 { font-style: italic; font-weight: 400; font-size: 23px; color: var(--ink); }
+  .seclabel .sl-mono { font-family: var(--mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); }
+  .rule { height:1px; flex:1; border-top:1px dashed var(--line-soft); }
+
+  /* featured "wanna read it?" cards */
+  .feature { display: grid; gap: 16px; }
+  .fcard { position: relative; background: color-mix(in srgb, var(--honey) 12%, var(--paper-2)); border: 1.5px solid color-mix(in srgb, var(--honey) 45%, var(--line));
+           border-radius: 18px; padding: 20px 22px; box-shadow: 0 5px 0 var(--line-soft); text-decoration: none; color: inherit; display:block;
+           transition: transform .18s ease, box-shadow .18s ease; animation: rise .45s ease both; }
+  .fcard:hover { transform: translateY(-3px); box-shadow: 0 8px 0 var(--line-soft); }
+  .fcard .hook { font-style: italic; font-size: 13.5px; color: var(--blush); margin-bottom: 9px; }
+  .fcard .meta { font-family: var(--mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 8px; }
+  .fcard .h { font-style: italic; font-size: 25px; line-height: 1.2; color: var(--ink); margin-bottom: 9px; }
+  .fcard .b { font-size: 15.5px; color: var(--ink-soft); line-height: 1.55; }
+  .fcard .go { display:inline-block; margin-top: 13px; font-style: italic; font-size: 14px; color: var(--ink); border-bottom: 1px solid var(--blush); padding-bottom:1px; }
+
+  /* filter chips */
+  .filters { display: flex; flex-wrap: wrap; gap: 7px; margin: 6px 0 4px; }
+  .chip { font-style: italic; font-size: 13.5px; color: var(--ink-soft); background: var(--paper-2);
+          border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px; cursor: pointer; transition: all .15s ease; }
+  .chip:hover { border-color: var(--sage); color: var(--ink); transform: translateY(-1px); }
+  .chip.active { background: var(--ink); color: var(--paper-2); border-color: var(--ink); }
+
+  /* the wall */
+  .wall { display: grid; gap: 13px; margin-top: 16px; }
+  .post { background: var(--paper-2); border: 1.4px solid var(--line); border-radius: 14px; padding: 15px 18px; box-shadow: 0 4px 0 var(--line-soft);
+          text-decoration: none; color: inherit; display:block; transition: transform .15s ease, border-color .15s ease; animation: rise .4s ease both; }
+  .post:hover { transform: translateY(-2px); border-color: var(--sage); }
+  .post .top { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom: 7px; }
+  .pub { font-family: var(--mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+  .dotsep { color: var(--ink-faint); opacity:.5; font-size: 9px; }
+  .tag { font-family: var(--mono); font-size: 8px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; color: var(--ink);
+         background: var(--sage-soft); border: 1px solid color-mix(in srgb, var(--sage) 40%, transparent); margin-left:auto; }
+  .post .h { font-style: italic; font-size: 19px; color: var(--ink); line-height: 1.25; margin-bottom: 5px; }
+  .post .b { font-size: 14.5px; color: var(--ink-soft); line-height: 1.5; }
+  .post .when { font-family: var(--mono); font-size: 9px; color: var(--ink-faint); margin-top:9px; opacity:.8; }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+
+  .endcap { text-align: center; margin-top: 30px; padding-top: 24px; border-top: 1px dashed var(--line-soft); }
+  .endcap p { font-style: italic; font-size: 13.5px; color: var(--ink-faint); line-height: 1.7; }
+  .endcap code { font-family: var(--mono); font-size: 11px; background: var(--paper-3); padding: 1px 6px; border-radius: 5px; }
+  .stamp { font-family: var(--mono); font-size: 9px; color: var(--ink-faint); opacity: .55; text-align: center; margin-top: 12px; }
+  .empty { font-style: italic; color: var(--ink-faint); padding: 30px 0; text-align: center; }
+
+  /* learning indicator + controls */
+  .learnbar { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px; margin-top: 16px; }
+  .learn-note { font-style: italic; font-size: 13px; color: var(--ink-faint); }
+  .learn-note b { color: var(--blush); font-style: normal; font-weight: 400; }
+  .lrn-btn { font-family: var(--mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft);
+             background: var(--paper-2); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer; transition: all .15s ease; }
+  .lrn-btn:hover { border-color: var(--sage); color: var(--ink); transform: translateY(-1px); }
+  .post.loved, .fcard.loved { box-shadow: 0 4px 0 var(--blush-soft); }
+  .lovedtag { font-family: var(--mono); font-size: 8px; letter-spacing:.08em; text-transform:uppercase; color: var(--blush); margin-left: 8px; }
+
+  .lamp { position: fixed; right: 22px; bottom: 18px; z-index: 6; background: none; border: 0; cursor: pointer; padding: 6px; line-height: 0; }
+  .lamp svg { width: 44px; height: 52px; fill: none; stroke: var(--ink-faint); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; transition: stroke .25s ease; }
+  .lamp:hover svg { stroke: var(--ink); }
+  .lamp.on .bulb { fill: var(--honey); stroke: none; opacity: .65; }
+  .lamp.on svg { stroke: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">‹ back to the room</a>
+
+  <div class="hero">
+    <div class="eyebrow">the reading room</div>
+    <h1 class="title">oooh, this topic.</h1>
+    <p class="sub">the good stuff from everyone you follow, pulled fresh and sorted by what <b>you</b> actually eat up. no feed, no doomscroll — just a couple worth your attention, and a shelf to browse when you want more.</p>
+  </div>
+
+  <div class="seclabel"><h2>for you right now</h2><span class="sl-mono" id="feat-count"></span><span class="rule"></span></div>
+  <div class="feature" id="feature"></div>
+
+  <div class="seclabel"><h2>the shelf</h2><span class="rule"></span></div>
+  <div class="filters" id="filters"></div>
+  <div class="wall" id="wall"></div>
+
+  <div class="endcap">
+    <div class="learnbar">
+      <span class="learn-note" id="learn-note"></span>
+    </div>
+    <div class="learnbar" style="margin-top:10px">
+      <button class="lrn-btn" id="copy-reads">📋 copy what i've been reading</button>
+      <button class="lrn-btn" id="reset-reads">reset learning</button>
+    </div>
+    <p id="sources" style="margin-top:18px"></p>
+    <p style="margin-top:8px">fresh posts? run <code>python3 my_room/fetch_reading.py</code> — or just tell me to.</p>
+  </div>
+  <p class="stamp" id="stamp"></p>
+</div>
+
+<button class="lamp" id="lamp" aria-label="cozy light" title="cozy light">
+  <svg viewBox="0 0 44 52"><path class="bulb" d="M11 19 L22 4 L33 19 Z"/><path d="M11 19 L33 19"/><line x1="22" y1="19" x2="22" y2="42"/><path d="M13 48 q9 -8 18 0 z"/></svg>
+</button>
+
+<script src="reading-data.js"></script>
+<script>
+(function () {
+  var R = window.READING || { posts: [], featured: [], topics: [], sources: [] };
+  var hooks = [
+    "wanna read it?", "this one's calling you.", "saved you a seat.",
+    "you'd eat this up.", "for the curious part of you.", "go down the rabbit hole."
+  ];
+  function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  // ================= click-learning =================
+  // Every post you open is logged to localStorage with a timestamp. On each load
+  // we decay old opens (30-day half-life — it tracks your *current* mood, forgets
+  // stale phases) into a per-topic + per-publication affinity, and nudge those
+  // posts up the ranking. Fully client-side; nothing leaves your machine unless
+  // you hit "copy what i've been reading" to hand it to me for a permanent retune.
+  var AKEY = "reading_affinity_v1";
+  var HALFLIFE_DAYS = 30;
+  function loadLog(){ try { return JSON.parse(localStorage.getItem(AKEY)) || []; } catch(e){ return []; } }
+  function saveLog(l){ try { localStorage.setItem(AKEY, JSON.stringify(l.slice(-400))); } catch(e){} }
+  function record(p){
+    var l = loadLog();
+    l.push({ title:p.title, pub:p.publication, topic:p.topic, link:p.link, ts:Date.now() });
+    saveLog(l);
+  }
+  function affinity(){
+    var l = loadLog(), now = Date.now(), T = {}, P = {}, links = {};
+    l.forEach(function(e){
+      var w = Math.pow(0.5, ((now - e.ts) / 86400000) / HALFLIFE_DAYS);
+      if (e.topic) T[e.topic] = (T[e.topic]||0) + w;
+      if (e.pub)   P[e.pub]   = (P[e.pub]||0) + w;
+      if (e.link)  links[e.link] = 1;
+    });
+    var maxT = Math.max(1, Math.max.apply(null, [0].concat(Object.keys(T).map(function(k){return T[k];}))));
+    var maxP = Math.max(1, Math.max.apply(null, [0].concat(Object.keys(P).map(function(k){return P[k];}))));
+    return { T:T, P:P, maxT:maxT, maxP:maxP, n:l.length, read:links };
+  }
+  var aff = affinity();
+  // combined score = base (topic-match + freshness) + learned topic boost (≤3) + learned pub boost (≤2)
+  function combined(p){
+    var bt = aff.T[p.topic] ? (aff.T[p.topic] / aff.maxT) * 3 : 0;
+    var bp = aff.P[p.publication] ? (aff.P[p.publication] / aff.maxP) * 2 : 0;
+    return (p.score || 0) + bt + bp;
+  }
+  var ranked = R.posts.slice().sort(function(a,b){ return combined(b) - combined(a); });
+
+  // top topics you've been reading, for the little note
+  var topAff = Object.keys(aff.T).sort(function(a,b){ return aff.T[b]-aff.T[a]; }).slice(0,3);
+
+  // ---- featured: top combined scorers, one per publication ----
+  var feat = [], seenPub = {};
+  ranked.forEach(function(p){
+    if (feat.length>=3 || seenPub[p.publication]) return;
+    feat.push(p); seenPub[p.publication]=1;
+  });
+  var fEl = document.getElementById("feature");
+  if (!feat.length) {
+    fEl.innerHTML = '<p class="empty">nothing pulled yet — add who you follow to reading-list.json and re-fetch.</p>';
+  } else {
+    document.getElementById("feat-count").textContent = feat.length + (feat.length===1?" pick":" picks");
+    feat.forEach(function(p,i){
+      var meta = [p.publication, p.read_min?p.read_min+" min read":null].filter(Boolean).join("  ·  ");
+      var a = document.createElement("a");
+      a.className = "fcard" + (aff.T[p.topic] ? " loved" : "");
+      a.href = p.link; a.target = "_blank"; a.rel = "noopener";
+      a.style.animationDelay = (i*0.06)+"s";
+      a.onclick = function(){ record(p); };
+      a.innerHTML =
+        '<div class="hook">'+esc(hooks[i % hooks.length])+'</div>' +
+        '<div class="meta">'+esc(meta)+(p.topic?'  ·  '+esc(p.topic):'')+'</div>' +
+        '<div class="h">'+esc(p.title)+'</div>' +
+        '<div class="b">'+esc(p.summary)+'</div>' +
+        '<span class="go">read it →</span>';
+      fEl.appendChild(a);
+    });
+  }
+
+  // ---- the shelf (filterable, learned order, diversified) ----
+  var wall = document.getElementById("wall");
+  var filters = document.getElementById("filters");
+  var active = "all";
+
+  function diversify(list){
+    var pool = list.slice(), out = [], recent = [];
+    while (pool.length) {
+      var pick = 0;
+      for (var i=0;i<pool.length;i++){ if (recent.slice(-2).indexOf(pool[i].publication)===-1){ pick=i; break; } }
+      var p = pool.splice(pick,1)[0]; out.push(p); recent.push(p.publication);
+    }
+    return out;
+  }
+
+  function render(){
+    wall.innerHTML = "";
+    var shown = ranked.filter(function(p){ return active==="all" || p.topic===active; });
+    shown = active==="all" ? diversify(shown) : shown;
+    if (!shown.length){ wall.innerHTML = '<p class="empty">nothing under that topic yet.</p>'; return; }
+    shown.forEach(function(p,i){
+      var loved = !!aff.T[p.topic] || !!aff.P[p.publication];
+      var a = document.createElement("a");
+      a.className = "post" + (loved ? " loved" : "");
+      a.href = p.link; a.target = "_blank"; a.rel = "noopener";
+      a.style.animationDelay = Math.min(i*0.03,0.4)+"s";
+      a.onclick = function(){ record(p); };
+      var when = [p.date_label, p.read_min?p.read_min+" min":null].filter(Boolean).join("  ·  ");
+      a.innerHTML =
+        '<div class="top"><span class="pub">'+esc(p.publication)+'</span>' +
+        (p.topic?'<span class="tag">'+esc(p.topic)+'</span>':'') +
+        (aff.read[p.link]?'<span class="lovedtag">opened</span>':'') + '</div>' +
+        '<div class="h">'+esc(p.title)+'</div>' +
+        '<div class="b">'+esc(p.summary)+'</div>' +
+        (when?'<div class="when">'+esc(when)+'</div>':'');
+      wall.appendChild(a);
+    });
+  }
+
+  function mkChip(label, val){
+    var b = document.createElement("button");
+    b.className = "chip" + (val===active?" active":"");
+    b.textContent = label;
+    b.onclick = function(){ active = val; [].forEach.call(filters.children,function(c){c.classList.remove("active");}); b.classList.add("active"); render(); };
+    return b;
+  }
+  filters.appendChild(mkChip("everything","all"));
+  // chips ordered by your affinity first, then the rest alphabetically
+  var allTopics = (R.topics||[]).slice().sort(function(a,b){
+    var d = (aff.T[b]||0) - (aff.T[a]||0); return d!==0 ? d : (a<b?-1:1);
+  });
+  allTopics.forEach(function(t){ filters.appendChild(mkChip(t,t)); });
+  render();
+
+  // ---- learning note ----
+  var note = document.getElementById("learn-note");
+  if (aff.n === 0) {
+    note.innerHTML = "this room learns as you read — open a few and it'll start floating your favorites up. ♡";
+  } else {
+    var lead = topAff.length ? (" — leaning into <b>" + topAff.map(esc).join("</b>, <b>") + "</b>") : "";
+    note.innerHTML = "learning from <b>" + aff.n + "</b> read" + (aff.n===1?"":"s") + lead;
+  }
+
+  // ---- footer ----
+  var srcs = (R.sources||[]).filter(function(s){return s.count;}).map(function(s){return s.name;});
+  document.getElementById("sources").textContent =
+    srcs.length ? ("pulled from " + srcs.length + " of your follows") : "no sources yet";
+  document.getElementById("stamp").textContent =
+    R.generated_label ? ("last pulled " + R.generated_label) : "";
+
+  // ---- copy / reset learning ----
+  document.getElementById("copy-reads").onclick = function(){
+    var l = loadLog();
+    var summary = {
+      total_opens: l.length,
+      by_topic: aff.T, by_publication: aff.P,
+      recent: l.slice(-40).reverse().map(function(e){ return { title:e.title, pub:e.pub, topic:e.topic }; })
+    };
+    var text = "my reading-room history (paste to Claude to retune ranking):\n" + JSON.stringify(summary, null, 1);
+    var btn = this;
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function(){
+      btn.textContent = "✓ copied — paste it to me";
+    }).catch(function(){
+      // fallback: drop into a textarea to copy manually
+      var ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); btn.textContent="✓ copied — paste it to me"; } catch(e){ btn.textContent="couldn't copy :("; }
+      document.body.removeChild(ta);
+    });
+    setTimeout(function(){ btn.textContent = "📋 copy what i've been reading"; }, 3500);
+  };
+  document.getElementById("reset-reads").onclick = function(){
+    if (confirm("Forget everything the room has learned about your reading?")) {
+      localStorage.removeItem(AKEY); location.reload();
+    }
+  };
+
+  // ---- cozy lamp ----
+  var lamp = document.getElementById("lamp");
+  if (localStorage.getItem("cozy")==="1"){ document.body.classList.add("cozy"); lamp.classList.add("on"); }
+  lamp.onclick = function(){
+    var on = document.body.classList.toggle("cozy");
+    lamp.classList.toggle("on", on);
+    localStorage.setItem("cozy", on?"1":"0");
+  };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+{
+  "_note": "Tiffany's reading room config. 'mine' = your own Substack. 'follows' = pulled from your profile (substack.com/@txfny) on 2026-06-24. Add/remove any Substack by its base URL (the feed is <url>/feed). Custom-domain Substacks work too. 'interests' tune ranking — more keyword matches = higher up the shelf.",
+
+  "mine": {
+    "name": null,
+    "url": null
+  },
+
+  "follows": [
+    { "name": "the art of being you", "url": "https://aerexoxo.substack.com" },
+    { "name": "The Art of Living", "url": "https://fareedahwrites.substack.com" },
+    { "name": "The Art of Noticing", "url": "https://robwalker.substack.com" },
+    { "name": "Books Worth Reading", "url": "https://booksworthreading.substack.com" },
+    { "name": "Claude Finance", "url": "https://claudefinance.substack.com" },
+    { "name": "Cool Stories About Art", "url": "https://www.coolstoriesabout.art" },
+    { "name": "Deep Learning Weekly", "url": "https://www.deeplearningweekly.com" },
+    { "name": "Design Better", "url": "https://designbetterpodcast.com" },
+    { "name": "diaries of a thought daughter", "url": "https://gabrielleaihara.substack.com" },
+    { "name": "The Dopamine Dispatch", "url": "https://divergentkellywrites.substack.com" },
+    { "name": "The Etymology Nerd", "url": "https://etymology.substack.com" },
+    { "name": "Five Minute Reads", "url": "https://fiveminutereads1.substack.com" },
+    { "name": "forEVA's Substack", "url": "https://forevahealth.substack.com" },
+    { "name": "Girl, You Need A Hobby", "url": "https://girlyouneedahobby.substack.com" },
+    { "name": "hot girls cook", "url": "https://hotgirlscook.substack.com" },
+    { "name": "Hot Girls Save Money", "url": "https://hotgirlssavemoney.substack.com" },
+    { "name": "How To Think More and Better", "url": "https://morebetterthinking.substack.com" },
+    { "name": "Neuroscience & Neuroplasticity", "url": "https://drtraster.substack.com" },
+    { "name": "Neuroscience & Wellness", "url": "https://neurosciencewellness.substack.com" },
+    { "name": "The New Yorker", "url": "https://newyorker.substack.com" },
+    { "name": "No More Shitty Books", "url": "https://thebestandworstshit.substack.com" },
+    { "name": "notes of an overthinking girl", "url": "https://notesofanoverthinkinggirl.substack.com" },
+    { "name": "perfume & letters", "url": "https://teoocriss.substack.com" },
+    { "name": "Psychology of Ordinary Things", "url": "https://psychologyofordinarythings.substack.com" },
+    { "name": "The Psychology of Your 20s", "url": "https://thepsychologyofyour20s.substack.com" },
+    { "name": "The Reading List", "url": "https://thereadinglist.substack.com" },
+    { "name": "Scandalous History", "url": "https://scandaloushistory.substack.com" },
+    { "name": "Smart is Sexy", "url": "https://smartissexy.substack.com" },
+    { "name": "thoughts beyond words", "url": "https://cinnamonxz09.substack.com" },
+    { "name": "to things that matter", "url": "https://thoughtsthatteaches.substack.com" },
+    { "name": "culture vulture", "url": "https://culturevulture.substack.com" }
+  ],
+
+  "_interests_note": "Each cluster: keyword list. A post scores per cluster (distinct keyword hits, capped at 3, +1.5 if a word is in the title). Highest-scoring cluster becomes the post's chip. FOOD IS PLEASURE-ONLY — no diet/calorie/weight cluster, ever (hard ED boundary).",
+
+  "interests": {
+    "the mind": ["brain", "neuroscience", "neuroplasticity", "neural", "neurons", "cognition", "cognitive", "memory", "attention", "perception", "consciousness", "dopamine", "the mind"],
+    "psychology": ["psychology", "psychological", "behavior", "behaviour", "emotion", "attachment", "trauma", "anxiety", "overthinking", "self-worth", "identity", "therapy", "mental", "your 20s", "your 30s", "inner child", "shadow"],
+    "nervous system & rest": ["nervous system", "vagus", "vagal", "regulation", "regulate", "dysregulat", "somatic", "stress", "calm", "rest", "burnout", "wellness", "healing", "massage", "spa", "softness", "doing less", "slow down"],
+    "persuasion & power": ["propaganda", "bernays", "manufactured", "manipulat", "persuasion", "persuade", "influence", "advertising", "marketing", "public relations", "consumer", "desire", "subconscious", "nudge", "who benefits", "power", "narrative", "spin", "engineered", "viral", "trend", "the internet", "algorithm feed", "why everyone"],
+    "words & etymology": ["etymology", "word", "language", "linguistic", "origin of", "meaning of", "phrase", "slang", "grammar", "definition"],
+    "art & noticing": ["art", "artist", "noticing", "the art of noticing", "creativity", "creative", "museum", "painting", "gallery", "beauty", "aesthetic", "wonder", "awe", "the ordinary"],
+    "crafts & making": ["ceramic", "pottery", "candle", "embroider", "knit", "crochet", "sewing", "craft", "diy", "handmade", "maker", "workshop", "drawing", "sketch"],
+    "books & reading": ["nonfiction", "essay", "reading habit", "reading list", "book recommendation", "author", "memoir", "what to read", "bookshelf", "literature"],
+    "fiction & story": ["novel", "fiction", "romance novel", "mystery", "thriller", "fantasy", "short story", "literary fiction", "page-turner", "storytelling"],
+    "history & scandal": ["history", "historical", "scandal", "ancient", "empire", "the past", "century", "dynasty", "forgotten", "untold"],
+    "romanticizing life": ["present", "presence", "slow living", "stillness", "alive", "savor", "romanticize", "ritual", "everyday magic", "joy", "mindful", "gratitude", "simple pleasures", "mortality", "finite", "enough", "meaning", "the good life"],
+    "faith & spirit": ["faith", "god", "prayer", "orthodox", "coptic", "christian", "church", "scripture", "sacred", "soul", "spiritual", "lent", "fasting", "saint", "grace", "theology", "the divine"],
+    "egypt & arabic": ["arabic", "egypt", "egyptian", "cairo", "masr", "diaspora", "middle east", "mena", "levant", "immigrant", "motherland", "calligraphy", "fairuz", "umm kulthum", "first-gen"],
+    "travel & wanderlust": ["travel", "trip", "flight", "itinerary", "city guide", "wanderlust", "abroad", "passport", "italy", "rome", "florence", "venice", "amalfi", "cape town", "peru", "iceland", "reykjavik", "amsterdam", "edinburgh", "paris", "london", "australia", "new orleans", "cairo"],
+    "love & relationships": ["love", "relationship", "dating", "partner", "marriage", "intimacy", "heartbreak", "commitment", "couple", "long-term", "attachment style"],
+    "womanhood & girlhood": ["woman", "women", "girlhood", "femininity", "feminine", "friendship", "sisterhood", "thought daughter", "feminism", "being a girl", "her", "softgirl"],
+    "beauty & scent & style": ["perfume", "fragrance", "scent", "skincare", "beauty", "makeup", "style", "fashion", "outfit", "wardrobe", "aesthetic", "getting ready", "glow"],
+    "food & cooking": ["recipe", "cooking", "kitchen", "baking", "flavor", "dish", "cuisine", "culinary", "restaurant", "chef", "comfort food", "homemade", "what i ate", "the perfect"],
+    "comedy & humor": ["comedy", "comedian", "humor", "funny", "joke", "satire", "standup", "witty", "absurd"],
+    "ai & systems": ["artificial intelligence", "machine learning", "deep learning", "neural network", "llm", "large language model", "the model", "ai ", "automation", "product design", "systems thinking"],
+    "money & adulting": ["money", "finance", "saving", "invest", "budget", "wealth", "salary", "frugal", "spending", "net worth"]
+  }
+}
