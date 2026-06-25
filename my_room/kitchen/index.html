@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the kitchen — tiffany os</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F2EADB; --paper-2: #F8F1E4; --paper-3: #EADFC9;
+    --ink: #4A4136; --ink-soft: #6E6354; --ink-faint: #A4977F;
+    --line: rgba(74,65,54,.30); --line-soft: rgba(74,65,54,.15);
+    --honey: #E7BE76; --sage: #9CAE86; --sage-soft: #C9D6B8; --blush: #D69E8E; --blush-soft: #EBD0C7;
+    --dusk: #C7B2CE; --skyblue: #AEC8CC;
+    --serif: "Newsreader", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--paper); }
+  body { font-family: var(--serif); color: var(--ink); font-size: 17px; line-height: 1.6; font-weight: 300;
+         -webkit-font-smoothing: antialiased; padding: 40px 24px 90px 56px; position: relative; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5;
+    background-image: radial-gradient(circle at 25% 35%, rgba(74,65,54,.02) 1px, transparent 2px),
+                      radial-gradient(circle at 75% 70%, rgba(74,65,54,.02) 1px, transparent 2px);
+    background-size: 26px 26px, 34px 34px; }
+  .spine { position: fixed; top: 30px; bottom: 30px; left: 30px; width: 1px; border-left: 1px dashed var(--line-soft); pointer-events: none; z-index: 1; }
+  .wrap { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
+
+  .crumb { font-size: 12px; font-style: italic; color: var(--ink-faint); margin-bottom: 26px; }
+  .crumb a { color: var(--ink-faint); text-decoration: none; border-bottom: 1px dotted var(--line); }
+  .crumb a:hover { color: var(--ink); }
+
+  .eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; }
+  h1 { font-style: italic; font-weight: 300; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; letter-spacing: -.01em; margin-bottom: 12px; }
+  .lede { font-style: italic; font-size: 16px; color: var(--ink-soft); line-height: 1.65; margin-bottom: 8px; max-width: 560px; }
+  .no-powder { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+               color: #5d7a4a; background: color-mix(in srgb, var(--sage) 32%, var(--paper-2)); border-radius: 999px; padding: 5px 12px; margin: 6px 0 26px; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 26px; }
+  .chip { font-style: italic; font-size: 13.5px; color: var(--ink-soft); background: var(--paper-2);
+          border: 1px solid var(--line); border-radius: 999px; padding: 5px 13px; cursor: pointer; transition: all .15s ease; }
+  .chip:hover { border-color: var(--sage); color: var(--ink); transform: translateY(-1px); }
+  .chip.active { background: var(--sage); color: var(--paper-2); border-color: var(--sage); }
+
+  .cards { display: flex; flex-direction: column; gap: 14px; }
+  .card { background: var(--paper-2); border: 1.4px solid var(--line); border-radius: 16px; overflow: hidden;
+          box-shadow: 0 5px 0 var(--line-soft); transition: border-color .18s ease; }
+  .card.open { border-color: var(--blush); }
+  .card-head { display: flex; align-items: center; gap: 14px; width: 100%; background: none; border: 0;
+               padding: 18px 20px; cursor: pointer; text-align: left; color: var(--ink); font-family: var(--serif); }
+  .card-emoji { font-size: 26px; flex: 0 0 auto; line-height: 1; }
+  .card-titles { flex: 1; min-width: 0; }
+  .card-name { font-style: italic; font-size: 21px; font-weight: 300; }
+  .card-blurb { font-style: italic; font-size: 13.5px; color: var(--ink-faint); line-height: 1.45; margin-top: 3px; }
+  .card-arrow { font-family: var(--mono); font-size: 14px; color: var(--ink-faint); flex: 0 0 auto; transition: transform .2s ease; }
+  .card.open .card-arrow { transform: rotate(90deg); }
+
+  .card-meta { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 4px 60px; }
+  .tag { font-family: var(--mono); font-size: 9.5px; letter-spacing: .04em; color: var(--ink-soft);
+         background: var(--paper-3); border-radius: 999px; padding: 3px 9px; }
+  .tag.macro { background: color-mix(in srgb, var(--honey) 38%, var(--paper-2)); color: #8a6a3a; }
+
+  .card-body { display: none; padding: 6px 20px 24px 60px; animation: rise .3s ease both; }
+  .card.open .card-body { display: block; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .sec-h { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); margin: 18px 0 10px; }
+  .ing { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .ing li { display: flex; align-items: flex-start; gap: 9px; font-style: italic; font-size: 15px; color: var(--ink-soft); line-height: 1.45; cursor: pointer; }
+  .ing li .box { color: var(--ink-faint); flex: 0 0 auto; font-size: 13px; font-style: normal; margin-top: 1px; }
+  .ing li.checked .t { text-decoration: line-through; color: var(--ink-faint); }
+  .ing li.checked .box { color: var(--sage); }
+  .steps { list-style: none; counter-reset: s; display: flex; flex-direction: column; gap: 11px; }
+  .steps li { counter-increment: s; display: flex; gap: 12px; font-size: 15px; color: var(--ink); line-height: 1.55; }
+  .steps li::before { content: counter(s); font-family: var(--mono); font-size: 11px; color: var(--blush);
+                      border: 1px solid var(--blush-soft); border-radius: 50%; width: 22px; height: 22px; flex: 0 0 auto;
+                      display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .swap { margin-top: 18px; background: var(--paper); border-left: 3px solid var(--sage); border-radius: 0 8px 8px 0; padding: 12px 16px; }
+  .swap .swap-h { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: #5d7a4a; margin-bottom: 5px; }
+  .swap p { font-style: italic; font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
+  .src { margin-top: 16px; font-size: 12.5px; font-style: italic; color: var(--ink-faint); }
+  .src a { color: var(--ink-faint); border-bottom: 1px dotted var(--line); text-decoration: none; }
+  .src a:hover { color: var(--ink); }
+
+  .signoff { margin-top: 44px; text-align: center; }
+  .signoff p { font-style: italic; font-size: 14px; color: var(--ink-faint); line-height: 1.7; }
+
+  @media (max-width: 600px) {
+    body { padding-left: 24px; } .spine { display: none; }
+    .card-meta { padding-left: 20px; } .card-body { padding-left: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="spine"></div>
+<div class="wrap">
+  <div class="crumb"><a href="../index.html">← back to the room</a></div>
+
+  <div class="eyebrow">the kitchen</div>
+  <h1 id="title">the kitchen</h1>
+  <p class="lede" id="lede">recipes you actually want — high protein, real food. tap one to open it up; tap an ingredient to check it off while you cook.</p>
+  <div class="no-powder">✶ <span id="powder-line">no protein powder in here — greek yogurt does the heavy lifting</span></div>
+
+  <div class="filters" id="filters"></div>
+  <div class="cards" id="cards"></div>
+
+  <div class="signoff">
+    <p>want another one in here? tell Claude in the room —<br>"add this to the kitchen" and paste the recipe ♡</p>
+  </div>
+</div>
+
+<script src="recipes.js"></script>
+<script>
+(function () {
+  var R = (window.RECIPES || { recipes: [] }), list = R.recipes || [];
+  if (R.note) document.getElementById("powder-line").textContent = R.note;
+  var cardsEl = document.getElementById("cards"), filtersEl = document.getElementById("filters");
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  // check-off state survives reloads (per browser)
+  var LS = "kitchen_checked_v1";
+  function load(){ try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch(e){ return {}; } }
+  function save(v){ try { localStorage.setItem(LS, JSON.stringify(v)); } catch(e){} }
+  var checked = load();
+
+  // category filter
+  var cats = ["all"]; list.forEach(function(r){ if (cats.indexOf(r.category) < 0) cats.push(r.category); });
+  var active = "all";
+
+  function macroStr(m){
+    if (!m) return "";
+    if (!m.cal && !m.protein) return m.per || "";
+    return m.cal + " cal · " + m.protein + "g protein" + (m.fiber ? " · " + m.fiber + "g fiber" : "");
+  }
+
+  function render(){
+    cardsEl.innerHTML = "";
+    list.filter(function(r){ return active === "all" || r.category === active; }).forEach(function(r){
+      var card = document.createElement("div"); card.className = "card";
+      var ing = (r.ingredients||[]).map(function(it, i){
+        var key = r.id + ":" + i, on = checked[key];
+        return '<li class="ing-item' + (on ? ' checked' : '') + '" data-key="' + esc(key) + '">' +
+               '<span class="box">' + (on ? '✓' : '○') + '</span><span class="t">' + esc(it) + '</span></li>';
+      }).join("");
+      var steps = (r.steps||[]).map(function(s){ return '<li>' + esc(s) + '</li>'; }).join("");
+      var meta = '<span class="tag">' + esc(r.category) + '</span>' +
+                 (r.time ? '<span class="tag">' + esc(r.time) + '</span>' : '') +
+                 (r.yields ? '<span class="tag">' + esc(r.yields) + '</span>' : '') +
+                 (macroStr(r.macros) ? '<span class="tag macro">' + esc(macroStr(r.macros)) + '</span>' : '');
+      var swap = r.swap ? '<div class="swap"><div class="swap-h">the swap</div><p>' + esc(r.swap) + '</p></div>' : '';
+      var src = (r.source && (r.source.label || r.source.url))
+        ? '<div class="src">' + (r.source.url
+            ? 'from <a href="' + esc(r.source.url) + '" target="_blank" rel="noopener">' + esc(r.source.label || r.source.url) + '</a>'
+            : 'from ' + esc(r.source.label)) + '</div>'
+        : '';
+      card.innerHTML =
+        '<button class="card-head"><span class="card-emoji">' + (r.emoji||"🍽") + '</span>' +
+          '<span class="card-titles"><span class="card-name">' + esc(r.name) + '</span>' +
+          (r.blurb ? '<span class="card-blurb">' + esc(r.blurb) + '</span>' : '') + '</span>' +
+          '<span class="card-arrow">›</span></button>' +
+        '<div class="card-meta">' + meta + '</div>' +
+        '<div class="card-body">' +
+          (r.macros && r.macros.per ? '<div class="sec-h">macros — ' + esc(r.macros.per) + '</div>' : '') +
+          '<div class="sec-h">ingredients</div><ul class="ing">' + ing + '</ul>' +
+          '<div class="sec-h">how</div><ol class="steps">' + steps + '</ol>' +
+          swap + src +
+        '</div>';
+      card.querySelector(".card-head").onclick = function(){ card.classList.toggle("open"); };
+      [].forEach.call(card.querySelectorAll(".ing-item"), function(li){
+        li.onclick = function(){ var k = li.getAttribute("data-key");
+          if (checked[k]) { delete checked[k]; li.classList.remove("checked"); li.querySelector(".box").textContent = "○"; }
+          else { checked[k] = 1; li.classList.add("checked"); li.querySelector(".box").textContent = "✓"; }
+          save(checked); };
+      });
+      cardsEl.appendChild(card);
+    });
+  }
+
+  cats.forEach(function(c){
+    var el = document.createElement("div"); el.className = "chip" + (c === active ? " active" : ""); el.textContent = c;
+    el.onclick = function(){ active = c; [].forEach.call(filtersEl.children, function(x){ x.classList.remove("active"); });
+      el.classList.add("active"); render(); };
+    filtersEl.appendChild(el);
+  });
+  render();
+})();
+</script>
+</body>
+</html>

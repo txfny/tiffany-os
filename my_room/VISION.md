@@ -17,9 +17,10 @@ a constellation of cozy little rooms — a real, functioning personal app you op
 things move, things pop up, things respond to you. it's allowed to be magic.
 
 ## the rooms
-- **the room (home)** — greeting, today, receipts, breath, doors to everywhere · *built*
+- **the room (home)** — greeting, today, receipts, breath, doors to everywhere · *built* · now with gratitude notes that drift through slow + cute ("how lucky i am…")
 - **someday** — your wishes, organized by *feeling* not by list · *built, evolving*
 - **arabic studio** — explore + practice (flashcards, trace) · *built*
+- **the kitchen** — high-protein recipes, greek-yogurt-forward, *no protein powder* · *built* · tap to open, check off ingredients as you cook
 - **learning library** — the next big glow-up: make it *magical* · *next*
 
 ## ideas captured (so we don't lose a single one)
@@ -39,6 +40,11 @@ things move, things pop up, things respond to you. it's allowed to be magic.
 - **assets / illustrations** that make ideas actually land
 - colorful, whimsy, cozy — the song-feeling
 - guided wonder, not passive reading — it walks beside you
+- **captured topics waiting to become walks** (say "build the X walk" anytime):
+  - **frozen lake RL** — teach a bot to cross the ice. Q-tables, Bellman update, explore-vs-exploit. *(captured in the library as a topic card)*
+  - **build-your-own-x** — the codecrafters list: build your own git / database / interpreter / etc. great "learn by rebuilding it" rabbit holes → https://github.com/codecrafters-io/build-your-own-x
+  - **MIT OpenCourseWare** — free, real MIT courses to pull from when a topic gets serious → https://ocw.mit.edu
+- **"how to find yourself" / ikigai** — a gentle self-discovery walk: ikigai (love / good at / world needs / paid for), reflective diary, define your ideal self, seek discomfort. could live as a cozy walk *or* feed the long-view room. *(idea to explore)*
 
 ### ✦ the long view — a door into "look how far we've come"
 - click a door → a **visual world of your growth over time**, not a dashboard. "look here, look what we *did*."
@@ -64,6 +70,11 @@ things move, things pop up, things respond to you. it's allowed to be magic.
 - [ ] make progress durable (move from browser localStorage → a real file)
 - [ ] the long view room — growth over time (receipts + the knowing) · *foundation: clean session schema + felt/narrative layer*
 - [ ] your own pink airplane ✈️
+- [ ] build the **frozen lake RL** walk out (interactive Q-learning) when you're in the mood
+- [ ] a **build-your-own-x** rabbit hole — pick one and rebuild it for fun
+- [ ] pull a real course from **MIT OCW** when a topic gets serious
+- [ ] a **"how to find yourself" / ikigai** walk — self-discovery, gently
+- [ ] kitchen: add photos to recipe cards · tag recipes by *feeling* (lazy morning / treat / meal-prep)
 
 ---
 *kept by Claude. this is the keeper of the dream.*

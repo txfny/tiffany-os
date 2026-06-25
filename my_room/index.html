@@ -77,6 +77,24 @@
   .confetti { position: fixed; z-index: 9; pointer-events: none; width: 8px; height: 8px; border-radius: 1px; animation: pop 1.25s ease-out forwards; }
   @keyframes pop { to { transform: translate(var(--dx,0), var(--dy,160px)) rotate(var(--r,180deg)); opacity: 0; } }
 
+  /* gentle gratitude notes drifting through the room — cute + slow */
+  .gratitude { position: fixed; z-index: 7; pointer-events: none; max-width: 232px;
+    font-style: italic; font-size: 14.5px; line-height: 1.45; color: var(--ink-soft);
+    background: var(--paper-2); border: 1.3px solid var(--line-soft); border-radius: 14px;
+    padding: 11px 15px 13px; box-shadow: 0 8px 22px rgba(74,65,54,.10); opacity: 0;
+    will-change: transform, opacity; }
+  .gratitude .lucky { display: block; font-family: var(--mono); font-size: 8.5px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--blush); margin-bottom: 6px; }
+  @keyframes drift {
+    0%   { opacity: 0; transform: translate(0, 26px) rotate(var(--tilt, -2deg)); }
+    14%  { opacity: .95; }
+    86%  { opacity: .95; }
+    100% { opacity: 0; transform: translate(var(--dx, 38px), calc(-1 * var(--rise, 160px))) rotate(var(--tilt2, 2deg)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gratitude { animation: none !important; transform: none !important; transition: opacity 1.8s ease; }
+  }
+
   @media (max-width: 540px) { .decor { display: none; } .lights { display: none; } }
 
   .wrap { position: relative; z-index: 1; max-width: 660px; margin: 0 auto; padding: 0 24px 90px 64px; }
@@ -347,6 +365,12 @@
       <span class="door-dot" style="background:var(--skyblue)"></span>
       <span class="glyph"><svg viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5zM12 6v13"/></svg></span>
       <span class="door-name">the library</span><span class="door-prev">learn something just for fun</span><span class="door-arrow">›</span>
+    </a></div>
+
+    <div class="door"><a class="door-row" href="kitchen/index.html">
+      <span class="door-dot" style="background:var(--honey)"></span>
+      <span class="glyph"><svg viewBox="0 0 24 24"><path d="M6 3v7a3 3 0 0 0 6 0V3M9 3v18M18 3c-1.5 0-2.5 2-2.5 5s1 4 2.5 4v9"/></svg></span>
+      <span class="door-name">the kitchen</span><span class="door-prev">high-protein recipes, no powder</span><span class="door-arrow">›</span>
     </a></div>
 
     <div class="door"><a class="door-row" href="longview/index.html">
@@ -728,6 +752,55 @@
   }
 
   if (R.generated_at) document.getElementById("stamp").textContent = "synced " + R.generated_at.replace("T", " ");
+})();
+
+// ── gentle gratitude notes that drift through the room, cute + slow ──
+(function () {
+  var LINES = [
+    "to be able to buy myself little things whenever i want.",
+    "to have delicious meals every day.",
+    "to be surrounded by friends who care about me.",
+    "to enjoy the simple things in life.",
+    "to wake up and do it all again.",
+    "to have a body that carries me through it all.",
+    "to have a cozy little corner that's mine.",
+    "to get to keep becoming."
+  ];
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var order = LINES.slice(), idx = 0;
+  for (var k = order.length - 1; k > 0; k--) { var j = Math.floor(Math.random() * (k + 1)); var t = order[k]; order[k] = order[j]; order[j] = t; }
+  function nextLine() { var l = order[idx % order.length]; idx++; return l; }
+
+  function spawn() {
+    if (document.hidden) return;
+    var n = document.createElement("div");
+    n.className = "gratitude";
+    n.innerHTML = '<span class="lucky">how lucky i am</span>' + esc(nextLine()) + ' <span>🤍</span>';
+    // keep clear of the left spine and the lamp in the bottom-right corner
+    n.style.left = (10 + Math.random() * 56) + "vw";
+    n.style.top = (52 + Math.random() * 30) + "vh";
+    document.body.appendChild(n);
+
+    if (reduce) {
+      // no motion — just a slow, in-place breath of a note
+      requestAnimationFrame(function () { n.style.opacity = ".95"; });
+      setTimeout(function () { n.style.opacity = "0"; }, 7000);
+      setTimeout(function () { if (n.parentNode) n.parentNode.removeChild(n); }, 9000);
+      return;
+    }
+    n.style.setProperty("--dx", (Math.random() * 70 - 18) + "px");
+    n.style.setProperty("--rise", (130 + Math.random() * 110) + "px");
+    n.style.setProperty("--tilt", (Math.random() * 4 - 2.5).toFixed(1) + "deg");
+    n.style.setProperty("--tilt2", (Math.random() * 4 - 1.5).toFixed(1) + "deg");
+    var dur = 24 + Math.random() * 8; // 24–32s — properly slow
+    n.style.animation = "drift " + dur + "s ease-in-out forwards";
+    n.addEventListener("animationend", function () { if (n.parentNode) n.parentNode.removeChild(n); });
+  }
+
+  // first one drifts in after a beat, then one every ~15–22s (at most ~2 floating at once)
+  setTimeout(spawn, 4500);
+  setInterval(function () { if (document.querySelectorAll(".gratitude").length < 2) spawn(); }, 16000 + Math.random() * 6000);
 })();
 </script>
 </body>
